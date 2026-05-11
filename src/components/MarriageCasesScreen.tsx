@@ -209,7 +209,7 @@ export default function MarriageCasesScreen() {
       providedHelpType: c.providedHelpType || 'none',
       monetaryAmount: c.monetaryAmount || '',
       inkindItems: c.inkindItems || '',
-      attachments: c.attachments || [],
+      attachments: normalizeAttachments(c.attachments),
       status: c.status || 'not_started'
     });
     setShowEditForm(true);
