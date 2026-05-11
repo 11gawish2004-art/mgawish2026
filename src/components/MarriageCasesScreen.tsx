@@ -1104,19 +1104,25 @@ export default function MarriageCasesScreen() {
                       onChange={e => setFormData({...formData, notes: e.target.value})}
                     />
                     
-                    <FileUploadSlot 
-                      label="رفع صور المستندات (البطاقات، قسيمة الزواج، إلخ)"
-                      caseName={formData.brideName || 'حالة_زواج'}
-                      values={formData.attachments}
-                      storagePath="marriage/docs"
-                      onUpload={(updater) => {
-                        if (typeof updater === 'function') {
-                          setFormData(prev => ({ ...prev, attachments: updater(prev.attachments || []) }));
-                        } else {
-                          setFormData(prev => ({ ...prev, attachments: updater }));
-                        }
-                      }}
-                    />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {ATTACHMENT_CATEGORIES.map(cat => (
+                        <FileUploadSlot
+                          key={cat.key}
+                          label={cat.label}
+                          caseName={formData.brideName || 'حالة_زواج'}
+                          values={(formData.attachments as any)?.[cat.key] || []}
+                          storagePath={`marriage/docs/${cat.key}`}
+                          onUpload={(updater) => {
+                            setFormData(prev => {
+                              const current = (prev.attachments as any) || emptyAttachments();
+                              const prevList = current[cat.key] || [];
+                              const next = typeof updater === 'function' ? (updater as any)(prevList) : updater;
+                              return { ...prev, attachments: { ...current, [cat.key]: next } };
+                            });
+                          }}
+                        />
+                      ))}
+                    </div>
                   </div>
 
                   <div className="flex gap-4 pt-4">
