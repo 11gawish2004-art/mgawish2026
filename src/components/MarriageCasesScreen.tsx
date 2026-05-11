@@ -117,7 +117,7 @@ export default function MarriageCasesScreen() {
     providedHelpType: 'none' as 'monetary' | 'inkind' | 'none',
     monetaryAmount: '',
     inkindItems: '',
-    attachments: [] as FileAttachment[],
+    attachments: emptyAttachments(),
     status: 'not_started' as 'completed' | 'in_progress' | 'not_started'
   });
 
