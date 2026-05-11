@@ -2,8 +2,7 @@
 import React, { useState, useRef } from 'react';
 import { Plus, X, Loader2, FileCheck, UploadCloud } from 'lucide-react';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { storage } from '../lib/firebase';
-import { uploadToGoogleDrive } from '../lib/driveUpload';
+import { storage, auth } from '../lib/firebase';
 import imageCompression from 'browser-image-compression';
 
 function cn(...inputs: any[]) {
