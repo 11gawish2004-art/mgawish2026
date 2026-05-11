@@ -36,6 +36,12 @@ export default function FileUploadSlot({
     const files = Array.from(e.target.files || []) as File[];
     if (files.length === 0) return;
 
+    if (!auth.currentUser) {
+      alert('يجب تسجيل الدخول أولاً لرفع الملفات');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
     for (const file of files) {
       let fileToUpload = file;
       
