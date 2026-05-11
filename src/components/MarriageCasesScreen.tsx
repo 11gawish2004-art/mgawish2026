@@ -36,7 +36,7 @@ interface MarriageCase {
   providedHelpType?: 'monetary' | 'inkind' | 'none';
   monetaryAmount?: string;
   inkindItems?: string;
-  attachments?: FileAttachment[];
+  attachments?: FileAttachment[] | Record<string, FileAttachment[]>;
   createdAt: any;
 }
 
@@ -49,6 +49,33 @@ const MARRIAGE_HELP_TYPES = [
   'شنطة عرايس',
   'أخرى'
 ];
+
+const ATTACHMENT_CATEGORIES: { key: string; label: string }[] = [
+  { key: 'brideId', label: 'بطاقة العروسة' },
+  { key: 'fatherId', label: 'بطاقة الأب' },
+  { key: 'motherId', label: 'بطاقة الأم' },
+  { key: 'marriageContract', label: 'قسيمة الزواج' },
+  { key: 'socialResearch', label: 'بحث اجتماعي' },
+  { key: 'insurancePrint', label: 'برينت تأميني' },
+  { key: 'other', label: 'مرفقات أخرى' },
+];
+
+const emptyAttachments = (): Record<string, FileAttachment[]> =>
+  Object.fromEntries(ATTACHMENT_CATEGORIES.map(c => [c.key, []]));
+
+const normalizeAttachments = (raw: any): Record<string, FileAttachment[]> => {
+  const base = emptyAttachments();
+  if (!raw) return base;
+  if (Array.isArray(raw)) {
+    return { ...base, other: raw };
+  }
+  if (typeof raw === 'object') {
+    for (const c of ATTACHMENT_CATEGORIES) {
+      if (Array.isArray(raw[c.key])) base[c.key] = raw[c.key];
+    }
+  }
+  return base;
+};
 
 export default function MarriageCasesScreen() {
   const [showAddForm, setShowAddForm] = useState(false);
@@ -90,7 +117,7 @@ export default function MarriageCasesScreen() {
     providedHelpType: 'none' as 'monetary' | 'inkind' | 'none',
     monetaryAmount: '',
     inkindItems: '',
-    attachments: [] as FileAttachment[],
+    attachments: emptyAttachments(),
     status: 'not_started' as 'completed' | 'in_progress' | 'not_started'
   });
 
@@ -157,7 +184,7 @@ export default function MarriageCasesScreen() {
       providedHelpType: 'none',
       monetaryAmount: '',
       inkindItems: '',
-      attachments: [],
+      attachments: emptyAttachments(),
       status: 'not_started'
     });
   };
@@ -182,7 +209,7 @@ export default function MarriageCasesScreen() {
       providedHelpType: c.providedHelpType || 'none',
       monetaryAmount: c.monetaryAmount || '',
       inkindItems: c.inkindItems || '',
-      attachments: c.attachments || [],
+      attachments: normalizeAttachments(c.attachments),
       status: c.status || 'not_started'
     });
     setShowEditForm(true);
@@ -1077,19 +1104,25 @@ export default function MarriageCasesScreen() {
                       onChange={e => setFormData({...formData, notes: e.target.value})}
                     />
                     
-                    <FileUploadSlot 
-                      label="رفع صور المستندات (البطاقات، قسيمة الزواج، إلخ)"
-                      caseName={formData.brideName || 'حالة_زواج'}
-                      values={formData.attachments}
-                      storagePath="marriage/docs"
-                      onUpload={(updater) => {
-                        if (typeof updater === 'function') {
-                          setFormData(prev => ({ ...prev, attachments: updater(prev.attachments || []) }));
-                        } else {
-                          setFormData(prev => ({ ...prev, attachments: updater }));
-                        }
-                      }}
-                    />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {ATTACHMENT_CATEGORIES.map(cat => (
+                        <FileUploadSlot
+                          key={cat.key}
+                          label={cat.label}
+                          caseName={formData.brideName || 'حالة_زواج'}
+                          values={(formData.attachments as any)?.[cat.key] || []}
+                          storagePath={`marriage/docs/${cat.key}`}
+                          onUpload={(updater) => {
+                            setFormData(prev => {
+                              const current = (prev.attachments as any) || emptyAttachments();
+                              const prevList = current[cat.key] || [];
+                              const next = typeof updater === 'function' ? (updater as any)(prevList) : updater;
+                              return { ...prev, attachments: { ...current, [cat.key]: next } };
+                            });
+                          }}
+                        />
+                      ))}
+                    </div>
                   </div>
 
                   <div className="flex gap-4 pt-4">

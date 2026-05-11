@@ -2,8 +2,7 @@
 import React, { useState, useRef } from 'react';
 import { Plus, X, Loader2, FileCheck, UploadCloud } from 'lucide-react';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { storage } from '../lib/firebase';
-import { uploadToGoogleDrive } from '../lib/driveUpload';
+import { storage, auth } from '../lib/firebase';
 import imageCompression from 'browser-image-compression';
 
 function cn(...inputs: any[]) {
@@ -36,6 +35,12 @@ export default function FileUploadSlot({
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []) as File[];
     if (files.length === 0) return;
+
+    if (!auth.currentUser) {
+      alert('يجب تسجيل الدخول أولاً لرفع الملفات');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
 
     for (const file of files) {
       let fileToUpload = file;
@@ -104,13 +109,6 @@ export default function FileUploadSlot({
             try {
               const url = await getDownloadURL(uploadTask.snapshot.ref);
               
-              // Secondary upload to Google Drive for redundancy
-              try {
-                await uploadToGoogleDrive(fileToUpload as File, label, caseName);
-              } catch (driveErr) {
-                console.error("Google Drive sync failed (non-blocking):", driveErr);
-              }
-
               onUpload((prev: FileAttachment[]) => [...prev, { url, name: file.name }]);
               setActiveUploads(prev => {
                 const next = { ...prev };
