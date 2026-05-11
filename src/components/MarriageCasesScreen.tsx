@@ -36,7 +36,7 @@ interface MarriageCase {
   providedHelpType?: 'monetary' | 'inkind' | 'none';
   monetaryAmount?: string;
   inkindItems?: string;
-  attachments?: FileAttachment[];
+  attachments?: FileAttachment[] | Record<string, FileAttachment[]>;
   createdAt: any;
 }
 
