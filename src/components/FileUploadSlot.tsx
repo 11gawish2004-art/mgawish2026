@@ -109,13 +109,6 @@ export default function FileUploadSlot({
             try {
               const url = await getDownloadURL(uploadTask.snapshot.ref);
               
-              // Secondary upload to Google Drive for redundancy
-              try {
-                await uploadToGoogleDrive(fileToUpload as File, label, caseName);
-              } catch (driveErr) {
-                console.error("Google Drive sync failed (non-blocking):", driveErr);
-              }
-
               onUpload((prev: FileAttachment[]) => [...prev, { url, name: file.name }]);
               setActiveUploads(prev => {
                 const next = { ...prev };
