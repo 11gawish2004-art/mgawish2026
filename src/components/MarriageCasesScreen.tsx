@@ -184,7 +184,7 @@ export default function MarriageCasesScreen() {
       providedHelpType: 'none',
       monetaryAmount: '',
       inkindItems: '',
-      attachments: [],
+      attachments: emptyAttachments(),
       status: 'not_started'
     });
   };
