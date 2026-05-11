@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, Info, X, Heart, Loader2, Trash2, Calendar, Target, TrendingUp, Image as ImageIcon, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';

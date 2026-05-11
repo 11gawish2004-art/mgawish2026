@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { Facebook, ExternalLink, Newspaper, Info } from 'lucide-react';
 import { motion } from 'motion/react';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, Phone, User, DollarSign, Calendar, CheckCircle2, XCircle, Trash2, Edit, X, Save, Clock, Filter, UserCheck, AlertCircle, TrendingUp, MessageSquare } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';

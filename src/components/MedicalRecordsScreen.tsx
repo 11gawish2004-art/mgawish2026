@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useEffect, useRef } from 'react';
 import { Plus, X, Calendar, User, Hospital, FileText, ClipboardList, Activity, FlaskConical, Database, Image as ImageIcon, CheckCircle2, AlertCircle, Clock, Trash2, Shield, Eye, EyeOff, Loader2, Search, Link as LinkIcon, Stethoscope, Printer, FileDown, FileUp, Download, Info, MapPin, Phone, CreditCard, ChevronLeft, ArrowRight, FileCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';

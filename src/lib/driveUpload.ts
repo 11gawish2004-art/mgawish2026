@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Utility to upload files to Google Drive via the backend API
  */

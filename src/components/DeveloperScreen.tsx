@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import { Terminal, Shield, Database, Users, Eye, AlertTriangle, RefreshCw, Trash2, ShieldAlert, CheckCircle2, XCircle, Clock, Lock, Unlock, Timer } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';

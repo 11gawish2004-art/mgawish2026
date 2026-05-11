@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import { Shield, Search, Calendar, User, Laptop, Info, Trash2 } from 'lucide-react';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';

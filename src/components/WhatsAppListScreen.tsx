@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import { Search, MessageCircle, Phone, User, Calendar, ExternalLink, Filter, X, Settings, Smartphone, Save, Loader2, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';

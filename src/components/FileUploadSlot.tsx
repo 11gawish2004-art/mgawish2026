@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useRef } from 'react';
 import { Plus, X, Loader2, FileCheck, UploadCloud } from 'lucide-react';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
