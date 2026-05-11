@@ -50,6 +50,33 @@ const MARRIAGE_HELP_TYPES = [
   'أخرى'
 ];
 
+const ATTACHMENT_CATEGORIES: { key: string; label: string }[] = [
+  { key: 'brideId', label: 'بطاقة العروسة' },
+  { key: 'fatherId', label: 'بطاقة الأب' },
+  { key: 'motherId', label: 'بطاقة الأم' },
+  { key: 'marriageContract', label: 'قسيمة الزواج' },
+  { key: 'socialResearch', label: 'بحث اجتماعي' },
+  { key: 'insurancePrint', label: 'برينت تأميني' },
+  { key: 'other', label: 'مرفقات أخرى' },
+];
+
+const emptyAttachments = (): Record<string, FileAttachment[]> =>
+  Object.fromEntries(ATTACHMENT_CATEGORIES.map(c => [c.key, []]));
+
+const normalizeAttachments = (raw: any): Record<string, FileAttachment[]> => {
+  const base = emptyAttachments();
+  if (!raw) return base;
+  if (Array.isArray(raw)) {
+    return { ...base, other: raw };
+  }
+  if (typeof raw === 'object') {
+    for (const c of ATTACHMENT_CATEGORIES) {
+      if (Array.isArray(raw[c.key])) base[c.key] = raw[c.key];
+    }
+  }
+  return base;
+};
+
 export default function MarriageCasesScreen() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
