@@ -1,8 +1,7 @@
 // @ts-nocheck
 import React, { useState, useRef } from 'react';
 import { Plus, X, Loader2, FileCheck, UploadCloud } from 'lucide-react';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { storage, auth } from '../lib/firebase';
+import { supabase } from '../integrations/supabase/client';
 import imageCompression from 'browser-image-compression';
 
 function cn(...inputs: any[]) {
@@ -12,6 +11,7 @@ function cn(...inputs: any[]) {
 export interface FileAttachment {
   url: string;
   name: string;
+  path?: string;
 }
 
 interface FileUploadSlotProps {
@@ -22,106 +22,87 @@ interface FileUploadSlotProps {
   storagePath?: string;
 }
 
-export default function FileUploadSlot({ 
-  label, 
-  onUpload, 
-  values = [], 
+const BUCKET = 'images';
+
+export default function FileUploadSlot({
+  label,
+  onUpload,
+  values = [],
   caseName = 'بدون_اسم',
-  storagePath = 'general/docs'
+  storagePath = 'general/docs',
 }: FileUploadSlotProps) {
   const [activeUploads, setActiveUploads] = useState<Record<string, { name: string; progress: number }>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const sanitize = (s: string) => s.replace(/[^\w.\-]+/g, '_');
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []) as File[];
     if (files.length === 0) return;
 
-    if (!auth.currentUser) {
-      alert('يجب تسجيل الدخول أولاً لرفع الملفات');
-      if (fileInputRef.current) fileInputRef.current.value = '';
-      return;
-    }
-
     for (const file of files) {
-      let fileToUpload = file;
-      
-      // Compress images before upload
+      let fileToUpload: File | Blob = file;
+
       if (file.type.startsWith('image/')) {
         try {
-          const options = {
+          fileToUpload = await imageCompression(file, {
             maxSizeMB: 0.8,
             maxWidthOrHeight: 1920,
             useWebWorker: true,
-          };
-          fileToUpload = await imageCompression(file, options);
-          console.log(`Original size: ${(file.size / 1024 / 1024).toFixed(2)}MB, Compressed size: ${(fileToUpload.size / 1024 / 1024).toFixed(2)}MB`);
-        } catch (compressionErr) {
-          console.error("Image compression failed, using original:", compressionErr);
+          });
+        } catch (err) {
+          console.error('Image compression failed, using original:', err);
         }
       }
 
-      // Validate file size after potential compression (max 20MB now since we compress)
-      if (fileToUpload.size > 20 * 1024 * 1024) {
+      if ((fileToUpload as Blob).size > 20 * 1024 * 1024) {
         alert(`الملف ${file.name} كبير جداً (الحد الأقصى 20 ميجابايت)`);
         continue;
       }
 
-      const fileId = `${Date.now()}_${file.name}`;
-      const storageRef = ref(storage, `${storagePath}/${fileId}`);
-      const metadata = { contentType: fileToUpload.type || 'image/jpeg' };
+      const fileId = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}_${sanitize(file.name)}`;
+      const objectPath = `${storagePath}/${fileId}`;
 
-      setActiveUploads(prev => ({
-        ...prev,
-        [fileId]: { name: file.name, progress: 10 }
-      }));
+      setActiveUploads(prev => ({ ...prev, [fileId]: { name: file.name, progress: 30 } }));
 
       try {
-        const uploadTask = uploadBytesResumable(storageRef, fileToUpload, metadata);
-        
-        uploadTask.on('state_changed', 
-          (snapshot) => {
-            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            setActiveUploads(prev => ({
-              ...prev,
-              [fileId]: { ...prev[fileId], progress: Math.max(10, progress) }
-            }));
-          }, 
-          (error) => {
-            console.error("Storage upload error details:", error);
-            let userMsg = `فشل رفع ملف ${file.name}`;
-            
-            if (error.code === 'storage/retry-limit-exceeded') {
-              userMsg += ": تجاوز الحد الأقصى للمحاولة. قد يكون ذلك بسبب ضعف الاتصال بالإنترنت، تجاوز حصة Firebase (Storage Quota)، أو عدم تفعيل الخدمة في لوحة التحكم.";
-            } else if (error.code === 'storage/unauthorized') {
-              userMsg += ": غير مصرح لك بالرفع. تأكد من تسجيل الدخول.";
-            } else {
-              userMsg += `: ${error.message}`;
-            }
-            alert(userMsg);
-            
-            setActiveUploads(prev => {
-              const next = { ...prev };
-              delete next[fileId];
-              return next;
-            });
-          }, 
-          async () => {
-            try {
-              const url = await getDownloadURL(uploadTask.snapshot.ref);
-              
-              onUpload((prev: FileAttachment[]) => [...prev, { url, name: file.name }]);
-              setActiveUploads(prev => {
-                const next = { ...prev };
-                delete next[fileId];
-                return next;
-              });
-            } catch (urlError) {
-              alert("خطأ في الحصول على رابط الملف");
-            }
-          }
-        );
+        const { error: uploadErr } = await supabase.storage
+          .from(BUCKET)
+          .upload(objectPath, fileToUpload, {
+            contentType: (fileToUpload as Blob).type || file.type || 'application/octet-stream',
+            upsert: false,
+          });
+
+        if (uploadErr) {
+          console.error('Supabase upload error:', uploadErr);
+          alert(`فشل رفع ${file.name}: ${uploadErr.message}`);
+          setActiveUploads(prev => {
+            const next = { ...prev };
+            delete next[fileId];
+            return next;
+          });
+          continue;
+        }
+
+        setActiveUploads(prev => ({ ...prev, [fileId]: { name: file.name, progress: 90 } }));
+
+        const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(objectPath);
+        const url = pub.publicUrl;
+
+        onUpload((prev: FileAttachment[]) => [...prev, { url, name: file.name, path: objectPath }]);
+
+        setActiveUploads(prev => {
+          const next = { ...prev };
+          delete next[fileId];
+          return next;
+        });
       } catch (err: any) {
         alert(`خطأ في الرفع: ${err.message}`);
+        setActiveUploads(prev => {
+          const next = { ...prev };
+          delete next[fileId];
+          return next;
+        });
       }
     }
     if (fileInputRef.current) fileInputRef.current.value = '';
@@ -141,20 +122,20 @@ export default function FileUploadSlot({
         </button>
       </div>
       <input type="file" className="hidden" ref={fileInputRef} onChange={handleFileChange} multiple accept="image/*,.pdf" />
-      
+
       <div className="flex flex-col gap-2 mt-2">
         <div className="flex flex-wrap gap-2">
           {values.map((file, idx) => (
             <div key={idx} className="flex items-center gap-2 bg-white border border-emerald-100 px-3 py-1 rounded-xl text-[10px] font-bold">
               <FileCheck className="w-3 h-3 text-emerald-500" />
-              <span className="truncate max-w-[100px]">{file.name}</span>
+              <a href={file.url} target="_blank" rel="noreferrer" className="truncate max-w-[100px] hover:underline">{file.name}</a>
               <button type="button" onClick={() => onUpload((prev: FileAttachment[]) => prev.filter((_, i) => i !== idx))} className="text-rose-500">
                 <X className="w-3 h-3" />
               </button>
             </div>
           ))}
         </div>
-        
+
         {Object.entries(activeUploads).map(([id, task]: [string, any]) => (
           <div key={id} className="space-y-1">
             <div className="flex justify-between text-[10px] font-bold">
@@ -162,15 +143,12 @@ export default function FileUploadSlot({
               <span>{Math.round(task.progress)}%</span>
             </div>
             <div className="w-full bg-emerald-200 h-1.5 rounded-full overflow-hidden">
-              <div 
-                className="bg-emerald-600 h-full transition-all duration-300" 
-                style={{ width: `${task.progress}%` }} 
-              />
+              <div className="bg-emerald-600 h-full transition-all duration-300" style={{ width: `${task.progress}%` }} />
             </div>
           </div>
         ))}
       </div>
-      
+
       {!isUploading && values.length === 0 && (
         <div className="flex-grow flex flex-col items-center justify-center text-stone-300 gap-1 opacity-50">
           <UploadCloud className="w-6 h-6" />
