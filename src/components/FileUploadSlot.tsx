@@ -1,7 +1,6 @@
 // @ts-nocheck
 import React, { useState, useRef } from 'react';
 import { Plus, X, Loader2, FileCheck, UploadCloud } from 'lucide-react';
-import { supabase } from '../integrations/supabase/client';
 import imageCompression from 'browser-image-compression';
 
 function cn(...inputs: any[]) {
@@ -22,8 +21,6 @@ interface FileUploadSlotProps {
   storagePath?: string;
 }
 
-const BUCKET = 'images';
-
 export default function FileUploadSlot({
   label,
   onUpload,
@@ -33,8 +30,6 @@ export default function FileUploadSlot({
 }: FileUploadSlotProps) {
   const [activeUploads, setActiveUploads] = useState<Record<string, { name: string; progress: number }>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const sanitize = (s: string) => s.replace(/[^\w.\-]+/g, '_');
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []) as File[];
@@ -60,22 +55,31 @@ export default function FileUploadSlot({
         continue;
       }
 
-      const fileId = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}_${sanitize(file.name)}`;
-      const objectPath = `${storagePath}/${fileId}`;
+      const fileId = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
       setActiveUploads(prev => ({ ...prev, [fileId]: { name: file.name, progress: 30 } }));
 
       try {
-        const { error: uploadErr } = await supabase.storage
-          .from(BUCKET)
-          .upload(objectPath, fileToUpload, {
-            contentType: (fileToUpload as Blob).type || file.type || 'application/octet-stream',
-            upsert: false,
-          });
+        const form = new FormData();
+        form.append('file', fileToUpload, file.name);
+        form.append('fileName', file.name);
+        form.append('storagePath', storagePath);
+        form.append('caseName', caseName);
 
-        if (uploadErr) {
-          console.error('Supabase upload error:', uploadErr);
-          alert(`فشل رفع ${file.name}: ${uploadErr.message}`);
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/upload-image`, {
+          method: 'POST',
+          headers: {
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: form,
+        });
+
+        const result = await response.json().catch(() => null);
+
+        if (!response.ok || !result?.url) {
+          const errorMessage = result?.error || 'تعذر رفع الملف';
+          console.error('Upload function error:', result || response.statusText);
+          alert(`فشل رفع ${file.name}: ${errorMessage}`);
           setActiveUploads(prev => {
             const next = { ...prev };
             delete next[fileId];
@@ -86,10 +90,7 @@ export default function FileUploadSlot({
 
         setActiveUploads(prev => ({ ...prev, [fileId]: { name: file.name, progress: 90 } }));
 
-        const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(objectPath);
-        const url = pub.publicUrl;
-
-        onUpload((prev: FileAttachment[]) => [...prev, { url, name: file.name, path: objectPath }]);
+        onUpload((prev: FileAttachment[]) => [...prev, { url: result.url, name: file.name, path: result.path }]);
 
         setActiveUploads(prev => {
           const next = { ...prev };
