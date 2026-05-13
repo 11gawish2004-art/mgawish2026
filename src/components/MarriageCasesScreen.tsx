@@ -163,6 +163,7 @@ export default function MarriageCasesScreen() {
       } else {
         await addDoc(collection(db, 'marriageCases'), {
           ...formData,
+          caseCode: formData.caseCode || generateCaseCode(),
           createdAt: serverTimestamp()
         });
       }
