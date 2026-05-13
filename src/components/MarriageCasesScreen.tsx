@@ -514,7 +514,7 @@ export default function MarriageCasesScreen() {
             <p style="margin:0; font-size: 10px;">نبروه</p>
           </div>
           <div style="text-align: left;">
-            <p style="font-size: 11px; margin:0;">كود الحالة: ${c.id.substring(0, 8)}</p>
+            <p style="font-size: 11px; margin:0;">كود الحالة: ${c.caseCode || c.id.substring(0, 8)}</p>
             <p style="font-size: 11px; margin:0;">تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}</p>
           </div>
         </div>
