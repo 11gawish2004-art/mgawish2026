@@ -198,7 +198,10 @@ export default function MarriageCasesScreen() {
       monetaryAmount: '',
       inkindItems: '',
       attachments: emptyAttachments(),
-      status: 'not_started'
+      status: 'not_started',
+      caseCode: '',
+      requestDate: new Date().toISOString().split('T')[0],
+      aidDate: ''
     });
   };
 
