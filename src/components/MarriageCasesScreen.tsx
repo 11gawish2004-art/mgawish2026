@@ -1029,6 +1029,11 @@ export default function MarriageCasesScreen() {
                         <FormInput label="ميعاد الفرح" placeholder="مثال: 2024-05-20" value={formData.weddingDate} onChange={val => setFormData({...formData, weddingDate: val})} />
                       </div>
                       <FormInput label="تاريخ عقد الزواج" value={formData.contractDate} onChange={val => setFormData({...formData, contractDate: val})} />
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormInput label="تاريخ تقديم الطلب" type="date" value={formData.requestDate} onChange={val => setFormData({...formData, requestDate: val})} />
+                        <FormInput label="تاريخ تقديم المساعدة" type="date" value={formData.aidDate} onChange={val => setFormData({...formData, aidDate: val})} />
+                      </div>
+                      <FormInput label="كود الحالة (يُولَّد تلقائيًا إن تُرك فارغًا)" placeholder="MAR-2026-0001" value={formData.caseCode} onChange={val => setFormData({...formData, caseCode: val})} />
                       <div className="space-y-2">
                         <label className="text-sm font-bold text-emerald-800 pr-2 block text-right">المساعدة المطلوبة (يمكن اختيار أكثر من نوع)</label>
                         <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100 grid grid-cols-2 lg:grid-cols-3 gap-3">
