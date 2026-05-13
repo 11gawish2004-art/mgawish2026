@@ -307,14 +307,15 @@ export default function MarriageCasesScreen() {
             <thead>
               <tr>
                 <th>مسلسل</th>
+                <th>كود الحالة</th>
                 <th>اسم العروسة</th>
                 <th>الرقم القومي</th>
-                <th>ولي الأمر</th>
                 <th>تليفون</th>
-                <th>العنوان</th>
-                <th>نوع الزواج</th>
-                <th>ميعاد الفرح</th>
-                <th>المساعدة المقدمة</th>
+                <th>تاريخ تقديم الطلب</th>
+                <th>تاريخ تقديم المساعدة</th>
+                <th>هل تم تقديم المساعدة؟</th>
+                <th>نوع المساعدة</th>
+                <th>تفاصيل المساعدة</th>
                 <th>الحالة</th>
               </tr>
             </thead>
@@ -322,14 +323,15 @@ export default function MarriageCasesScreen() {
               ${casesToPrint.map((c, i) => `
                 <tr>
                   <td>${i + 1}</td>
+                  <td>${c.caseCode || '-'}</td>
                   <td>${c.brideName}</td>
                   <td>${c.brideNationalId}</td>
-                  <td>${c.guardianName || '-'}</td>
                   <td>${c.phone1}</td>
-                  <td>${c.address}</td>
-                  <td>${c.marriageType === 'official' ? 'رسمي' : 'عرفي'}</td>
-                  <td>${c.weddingDate}</td>
-                  <td>${c.providedHelpType === 'monetary' ? `نقدية (${c.monetaryAmount} ج.م)` : c.providedHelpType === 'inkind' ? `عينية (${c.inkindItems})` : 'لم تقدم بعد'}</td>
+                  <td>${c.requestDate || '-'}</td>
+                  <td>${c.aidDate || '-'}</td>
+                  <td>${c.providedHelpType && c.providedHelpType !== 'none' ? 'نعم' : 'لا'}</td>
+                  <td>${c.providedHelpType === 'monetary' ? 'مادية' : c.providedHelpType === 'inkind' ? 'عينية' : '-'}</td>
+                  <td>${c.providedHelpType === 'monetary' ? `${c.monetaryAmount || ''} ج.م` : c.providedHelpType === 'inkind' ? (c.inkindItems || '') : '-'}</td>
                   <td>${c.status === 'completed' ? 'تم' : c.status === 'in_progress' ? 'جاري' : 'لا'}</td>
                 </tr>
               `).join('')}
