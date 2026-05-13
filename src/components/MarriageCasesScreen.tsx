@@ -706,6 +706,7 @@ export default function MarriageCasesScreen() {
   const exportToExcel = () => {
     const data = filteredCases.map((c, i) => ({
       'م': i + 1,
+      'كود الحالة': c.caseCode || '',
       'اسم العروسة': c.brideName,
       'الرقم القومي للعروسة': c.brideNationalId,
       'ولي الأمر': c.guardianName,
