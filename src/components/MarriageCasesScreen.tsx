@@ -226,7 +226,10 @@ export default function MarriageCasesScreen() {
       monetaryAmount: c.monetaryAmount || '',
       inkindItems: c.inkindItems || '',
       attachments: normalizeAttachments(c.attachments),
-      status: c.status || 'not_started'
+      status: c.status || 'not_started',
+      caseCode: c.caseCode || '',
+      requestDate: c.requestDate || '',
+      aidDate: c.aidDate || ''
     });
     setShowEditForm(true);
   };
