@@ -37,8 +37,17 @@ interface MarriageCase {
   monetaryAmount?: string;
   inkindItems?: string;
   attachments?: FileAttachment[] | Record<string, FileAttachment[]>;
+  caseCode?: string;
+  requestDate?: string;
+  aidDate?: string;
   createdAt: any;
 }
+
+const generateCaseCode = () => {
+  const year = new Date().getFullYear();
+  const rand = Math.floor(1000 + Math.random() * 9000);
+  return `MAR-${year}-${rand}`;
+};
 
 const MARRIAGE_HELP_TYPES = [
   'أجهزة كهربائية',
@@ -118,7 +127,10 @@ export default function MarriageCasesScreen() {
     monetaryAmount: '',
     inkindItems: '',
     attachments: emptyAttachments(),
-    status: 'not_started' as 'completed' | 'in_progress' | 'not_started'
+    status: 'not_started' as 'completed' | 'in_progress' | 'not_started',
+    caseCode: '',
+    requestDate: new Date().toISOString().split('T')[0],
+    aidDate: ''
   });
 
   useEffect(() => {
@@ -151,6 +163,7 @@ export default function MarriageCasesScreen() {
       } else {
         await addDoc(collection(db, 'marriageCases'), {
           ...formData,
+          caseCode: formData.caseCode || generateCaseCode(),
           createdAt: serverTimestamp()
         });
       }
@@ -185,7 +198,10 @@ export default function MarriageCasesScreen() {
       monetaryAmount: '',
       inkindItems: '',
       attachments: emptyAttachments(),
-      status: 'not_started'
+      status: 'not_started',
+      caseCode: '',
+      requestDate: new Date().toISOString().split('T')[0],
+      aidDate: ''
     });
   };
 
@@ -210,7 +226,10 @@ export default function MarriageCasesScreen() {
       monetaryAmount: c.monetaryAmount || '',
       inkindItems: c.inkindItems || '',
       attachments: normalizeAttachments(c.attachments),
-      status: c.status || 'not_started'
+      status: c.status || 'not_started',
+      caseCode: c.caseCode || '',
+      requestDate: c.requestDate || '',
+      aidDate: c.aidDate || ''
     });
     setShowEditForm(true);
   };
@@ -288,14 +307,15 @@ export default function MarriageCasesScreen() {
             <thead>
               <tr>
                 <th>مسلسل</th>
+                <th>كود الحالة</th>
                 <th>اسم العروسة</th>
                 <th>الرقم القومي</th>
-                <th>ولي الأمر</th>
                 <th>تليفون</th>
-                <th>العنوان</th>
-                <th>نوع الزواج</th>
-                <th>ميعاد الفرح</th>
-                <th>المساعدة المقدمة</th>
+                <th>تاريخ تقديم الطلب</th>
+                <th>تاريخ تقديم المساعدة</th>
+                <th>هل تم تقديم المساعدة؟</th>
+                <th>نوع المساعدة</th>
+                <th>تفاصيل المساعدة</th>
                 <th>الحالة</th>
               </tr>
             </thead>
@@ -303,14 +323,15 @@ export default function MarriageCasesScreen() {
               ${casesToPrint.map((c, i) => `
                 <tr>
                   <td>${i + 1}</td>
+                  <td>${c.caseCode || '-'}</td>
                   <td>${c.brideName}</td>
                   <td>${c.brideNationalId}</td>
-                  <td>${c.guardianName || '-'}</td>
                   <td>${c.phone1}</td>
-                  <td>${c.address}</td>
-                  <td>${c.marriageType === 'official' ? 'رسمي' : 'عرفي'}</td>
-                  <td>${c.weddingDate}</td>
-                  <td>${c.providedHelpType === 'monetary' ? `نقدية (${c.monetaryAmount} ج.م)` : c.providedHelpType === 'inkind' ? `عينية (${c.inkindItems})` : 'لم تقدم بعد'}</td>
+                  <td>${c.requestDate || '-'}</td>
+                  <td>${c.aidDate || '-'}</td>
+                  <td>${c.providedHelpType && c.providedHelpType !== 'none' ? 'نعم' : 'لا'}</td>
+                  <td>${c.providedHelpType === 'monetary' ? 'مادية' : c.providedHelpType === 'inkind' ? 'عينية' : '-'}</td>
+                  <td>${c.providedHelpType === 'monetary' ? `${c.monetaryAmount || ''} ج.م` : c.providedHelpType === 'inkind' ? (c.inkindItems || '') : '-'}</td>
                   <td>${c.status === 'completed' ? 'تم' : c.status === 'in_progress' ? 'جاري' : 'لا'}</td>
                 </tr>
               `).join('')}
@@ -377,7 +398,7 @@ export default function MarriageCasesScreen() {
               <p style="margin:0; font-size: 10px;">نبروه</p>
             </div>
             <div style="text-align: left;">
-              <p>كود الحالة: ${c.id.substring(0, 8)}</p>
+              <p>كود الحالة: ${c.caseCode || c.id.substring(0, 8)}</p>
               <p>تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}</p>
             </div>
           </div>
@@ -407,7 +428,9 @@ export default function MarriageCasesScreen() {
               <div class="data-item"><span class="label">الرقم القومي لولي الأمر</span><div class="value">${c.guardianNationalId || '-'}</div></div>
               <div class="data-item"><span class="label">نوع الزواج</span><div class="value">${c.marriageType === 'official' ? 'رسمي' : 'عرفي'}</div></div>
               <div class="data-item"><span class="label">ميعاد الفرح</span><div class="value">${c.weddingDate || '-'}</div></div>
-              <div class="data-item full-width"><span class="label">تاريخ عقد الزواج</span><div class="value">${c.contractDate || '-'}</div></div>
+             <div class="data-item"><span class="label">تاريخ عقد الزواج</span><div class="value">${c.contractDate || '-'}</div></div>
+              <div class="data-item"><span class="label">تاريخ تقديم الطلب</span><div class="value">${c.requestDate || '-'}</div></div>
+              <div class="data-item full-width"><span class="label">تاريخ تقديم المساعدة</span><div class="value">${c.aidDate || '-'}</div></div>
             </div>
           </div>
 
@@ -493,7 +516,7 @@ export default function MarriageCasesScreen() {
             <p style="margin:0; font-size: 10px;">نبروه</p>
           </div>
           <div style="text-align: left;">
-            <p style="font-size: 11px; margin:0;">كود الحالة: ${c.id.substring(0, 8)}</p>
+            <p style="font-size: 11px; margin:0;">كود الحالة: ${c.caseCode || c.id.substring(0, 8)}</p>
             <p style="font-size: 11px; margin:0;">تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}</p>
           </div>
         </div>
@@ -523,7 +546,9 @@ export default function MarriageCasesScreen() {
             <div class="data-item"><span class="label">الرقم القومي لولي الأمر</span><div class="value">${c.guardianNationalId || '-'}</div></div>
             <div class="data-item"><span class="label">نوع الزواج</span><div class="value">${c.marriageType === 'official' ? 'رسمي' : 'عرفي'}</div></div>
             <div class="data-item"><span class="label">ميعاد الفرح</span><div class="value">${c.weddingDate || '-'}</div></div>
-            <div class="data-item full-width"><span class="label">تاريخ عقد الزواج</span><div class="value">${c.contractDate || '-'}</div></div>
+            <div class="data-item"><span class="label">تاريخ عقد الزواج</span><div class="value">${c.contractDate || '-'}</div></div>
+            <div class="data-item"><span class="label">تاريخ تقديم الطلب</span><div class="value">${c.requestDate || '-'}</div></div>
+            <div class="data-item full-width"><span class="label">تاريخ تقديم المساعدة</span><div class="value">${c.aidDate || '-'}</div></div>
           </div>
         </div>
 
@@ -681,6 +706,7 @@ export default function MarriageCasesScreen() {
   const exportToExcel = () => {
     const data = filteredCases.map((c, i) => ({
       'م': i + 1,
+      'كود الحالة': c.caseCode || '',
       'اسم العروسة': c.brideName,
       'الرقم القومي للعروسة': c.brideNationalId,
       'ولي الأمر': c.guardianName,
@@ -693,6 +719,9 @@ export default function MarriageCasesScreen() {
       'نوع الزواج': c.marriageType === 'official' ? 'رسمي' : 'عرفي',
       'ميعاد الفرح': c.weddingDate,
       'تاريخ عقد الزواج': c.contractDate,
+      'تاريخ تقديم الطلب': c.requestDate || '',
+      'تاريخ تقديم المساعدة': c.aidDate || '',
+      'هل تم تقديم المساعدة؟': c.providedHelpType && c.providedHelpType !== 'none' ? 'نعم' : 'لا',
       'المساعدة المطلوبة': (Array.isArray(c.requiredHelp) ? c.requiredHelp : []).join(', '),
       'نوع المساعدة المستلمة': c.providedHelpType === 'monetary' ? 'نقدية' : c.providedHelpType === 'inkind' ? 'عينية' : 'لا يوجد',
       'المبلغ المستلم': c.monetaryAmount || '',
@@ -1010,6 +1039,11 @@ export default function MarriageCasesScreen() {
                         <FormInput label="ميعاد الفرح" placeholder="مثال: 2024-05-20" value={formData.weddingDate} onChange={val => setFormData({...formData, weddingDate: val})} />
                       </div>
                       <FormInput label="تاريخ عقد الزواج" value={formData.contractDate} onChange={val => setFormData({...formData, contractDate: val})} />
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormInput label="تاريخ تقديم الطلب" type="date" value={formData.requestDate} onChange={val => setFormData({...formData, requestDate: val})} />
+                        <FormInput label="تاريخ تقديم المساعدة" type="date" value={formData.aidDate} onChange={val => setFormData({...formData, aidDate: val})} />
+                      </div>
+                      <FormInput label="كود الحالة (يُولَّد تلقائيًا إن تُرك فارغًا)" placeholder="MAR-2026-0001" value={formData.caseCode} onChange={val => setFormData({...formData, caseCode: val})} />
                       <div className="space-y-2">
                         <label className="text-sm font-bold text-emerald-800 pr-2 block text-right">المساعدة المطلوبة (يمكن اختيار أكثر من نوع)</label>
                         <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100 grid grid-cols-2 lg:grid-cols-3 gap-3">
