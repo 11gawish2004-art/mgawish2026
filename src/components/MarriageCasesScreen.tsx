@@ -428,7 +428,9 @@ export default function MarriageCasesScreen() {
               <div class="data-item"><span class="label">الرقم القومي لولي الأمر</span><div class="value">${c.guardianNationalId || '-'}</div></div>
               <div class="data-item"><span class="label">نوع الزواج</span><div class="value">${c.marriageType === 'official' ? 'رسمي' : 'عرفي'}</div></div>
               <div class="data-item"><span class="label">ميعاد الفرح</span><div class="value">${c.weddingDate || '-'}</div></div>
-              <div class="data-item full-width"><span class="label">تاريخ عقد الزواج</span><div class="value">${c.contractDate || '-'}</div></div>
+             <div class="data-item"><span class="label">تاريخ عقد الزواج</span><div class="value">${c.contractDate || '-'}</div></div>
+              <div class="data-item"><span class="label">تاريخ تقديم الطلب</span><div class="value">${c.requestDate || '-'}</div></div>
+              <div class="data-item full-width"><span class="label">تاريخ تقديم المساعدة</span><div class="value">${c.aidDate || '-'}</div></div>
             </div>
           </div>
 
