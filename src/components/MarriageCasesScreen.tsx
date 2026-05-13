@@ -37,8 +37,17 @@ interface MarriageCase {
   monetaryAmount?: string;
   inkindItems?: string;
   attachments?: FileAttachment[] | Record<string, FileAttachment[]>;
+  caseCode?: string;
+  requestDate?: string;
+  aidDate?: string;
   createdAt: any;
 }
+
+const generateCaseCode = () => {
+  const year = new Date().getFullYear();
+  const rand = Math.floor(1000 + Math.random() * 9000);
+  return `MAR-${year}-${rand}`;
+};
 
 const MARRIAGE_HELP_TYPES = [
   'أجهزة كهربائية',
