@@ -307,6 +307,7 @@ function NavLinks({ onLinkClick, userConfig }: { onLinkClick?: () => void, userC
     { to: "/logs", icon: <Shield className="w-5 h-5" />, label: "سجل الأمان", id: 'logs' },
     { to: "/activities", icon: <ClipboardList className="w-5 h-5" />, label: "الأنشطة", id: 'activities' },
     { to: "/orphans", icon: <Heart className="w-5 h-5" />, label: "هيئة الأعمال", id: 'orphans' },
+    { to: "/payroll", icon: <DollarSign className="w-5 h-5" />, label: "كشف القبض الشهري", id: 'payroll' },
     { to: "/developer", icon: <Terminal className="w-5 h-5" />, label: "المبرمج", id: 'developer' },
   ];
 
