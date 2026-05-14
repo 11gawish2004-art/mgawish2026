@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { db, auth } from '../lib/firebase';
 import { collection, getDocs, query, limit, orderBy, deleteDoc, doc, writeBatch, where, updateDoc, serverTimestamp, onSnapshot, setDoc } from 'firebase/firestore';
 import ConfirmModal from './ConfirmModal';
+import BrandingUpload from './BrandingUpload';
 
 export default function DeveloperScreen() {
   const [siteSettings, setSiteSettings] = useState({
@@ -301,6 +302,7 @@ export default function DeveloperScreen() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-20">
+      <BrandingUpload />
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-emerald-900 text-white p-8 rounded-3xl shadow-xl border-4 border-emerald-800">
         <div className="flex items-center gap-6">
           <div className="bg-emerald-800 p-4 rounded-2xl shadow-inner">
