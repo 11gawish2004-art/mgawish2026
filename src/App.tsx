@@ -31,6 +31,7 @@ import SeasonalCasesScreen from './components/SeasonalCasesScreen';
 import AboutScreen from './components/AboutScreen';
 import Logo from './components/Logo';
 import VoiceAssistant from './components/VoiceAssistant';
+import MonthlyPayrollScreen from './components/MonthlyPayrollScreen';
 
 const DEVELOPER_EMAIL = '11gawish2004@gmail.com';
 
@@ -306,6 +307,7 @@ function NavLinks({ onLinkClick, userConfig }: { onLinkClick?: () => void, userC
     { to: "/logs", icon: <Shield className="w-5 h-5" />, label: "سجل الأمان", id: 'logs' },
     { to: "/activities", icon: <ClipboardList className="w-5 h-5" />, label: "الأنشطة", id: 'activities' },
     { to: "/orphans", icon: <Heart className="w-5 h-5" />, label: "هيئة الأعمال", id: 'orphans' },
+    { to: "/payroll", icon: <DollarSign className="w-5 h-5" />, label: "كشف القبض الشهري", id: 'payroll' },
     { to: "/developer", icon: <Terminal className="w-5 h-5" />, label: "المبرمج", id: 'developer' },
   ];
 
@@ -361,7 +363,7 @@ export default function App() {
     if (user.email === DEVELOPER_EMAIL) {
       setUserConfig({
         email: user.email,
-        permissions: ['dashboard', 'reception', 'cases', 'seasonal', 'medical', 'whatsapp', 'marriage', 'accounts', 'parties', 'campaigns', 'news', 'volunteers', 'logs', 'activities', 'orphans', 'developer'],
+        permissions: ['dashboard', 'reception', 'cases', 'seasonal', 'medical', 'whatsapp', 'marriage', 'accounts', 'parties', 'campaigns', 'news', 'volunteers', 'logs', 'activities', 'orphans', 'payroll', 'developer'],
         isAdmin: true
       });
       return;
@@ -598,6 +600,9 @@ export default function App() {
               )}
               {(userConfig?.isAdmin || user.email === DEVELOPER_EMAIL || userConfig?.permissions?.includes('orphans')) && (
                 <Route path="/orphans" element={<OrphansScreen />} />
+              )}
+              {(userConfig?.isAdmin || user.email === DEVELOPER_EMAIL || userConfig?.permissions?.includes('payroll')) && (
+                <Route path="/payroll" element={<MonthlyPayrollScreen />} />
               )}
             </Routes>
           </div>
