@@ -30,6 +30,7 @@ import ReceptionScreen from './components/ReceptionScreen';
 import SeasonalCasesScreen from './components/SeasonalCasesScreen';
 import AboutScreen from './components/AboutScreen';
 import Logo from './components/Logo';
+import VoiceAssistant from './components/VoiceAssistant';
 
 const DEVELOPER_EMAIL = '11gawish2004@gmail.com';
 
@@ -630,6 +631,7 @@ export default function App() {
               <ChevronDown className="w-6 h-6 group-hover:translate-y-1 transition-transform" />
             </button>
           </div>
+          <VoiceAssistant />
         </main>
       </div>
     </BrowserRouter>
