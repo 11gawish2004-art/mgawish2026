@@ -459,6 +459,9 @@ export default function OrphansScreen() {
           setResearchForm({
             researchNumber: '',
             researchDate: new Date().toISOString().split('T')[0],
+            targetOrphanIndex: 0,
+            targetOrphanName: '',
+            targetSchoolGrade: '',
             isAlive: true,
             housingType: 'owned',
             rentAmount: 0,
