@@ -376,11 +376,13 @@ export default function OrphansScreen() {
 
   const handleToggleAddResearch = () => {
     if (!showAddResearch && researchList.length > 0) {
-      // Pre-fill from the most recent research
       const last = researchList[0];
       setResearchForm({
-        researchNumber: '', // Keep empty for new
+        researchNumber: '',
         researchDate: new Date().toISOString().split('T')[0],
+        targetOrphanIndex: last.targetOrphanIndex ?? 0,
+        targetOrphanName: '',
+        targetSchoolGrade: '',
         isAlive: last.isAlive ?? true,
         housingType: last.housingType || 'owned',
         rentAmount: last.rentAmount || 0,
@@ -393,6 +395,9 @@ export default function OrphansScreen() {
       setResearchForm({
         researchNumber: '',
         researchDate: new Date().toISOString().split('T')[0],
+        targetOrphanIndex: 0,
+        targetOrphanName: '',
+        targetSchoolGrade: '',
         isAlive: true,
         housingType: 'owned',
         rentAmount: 0,
@@ -413,6 +418,9 @@ export default function OrphansScreen() {
     setResearchForm({
       researchNumber: res.researchNumber || '',
       researchDate: res.researchDate || (res.createdAt?.toDate() ? new Date(res.createdAt.toDate()).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]),
+      targetOrphanIndex: res.targetOrphanIndex ?? 0,
+      targetOrphanName: res.targetOrphanName || '',
+      targetSchoolGrade: res.targetSchoolGrade || '',
       isAlive: res.isAlive ?? true,
       housingType: res.housingType || 'owned',
       rentAmount: res.rentAmount || 0,
