@@ -468,14 +468,18 @@ export default function OrphansScreen() {
   const handleConfirmSave = async () => {
     try {
       if (editingCase) {
-        await updateDoc(doc(db, 'orphans', editingCase.id), {
-          ...formData,
-          updatedAt: serverTimestamp()
-        });
+        const patch: any = { ...formData, updatedAt: serverTimestamp() };
+        // Generate caseCode if missing or registrationPlace changed
+        if (!editingCase.caseCode || (editingCase.registrationPlace !== formData.registrationPlace)) {
+          patch.caseCode = generateCaseCode(formData.registrationPlace, orphans);
+        }
+        await updateDoc(doc(db, 'orphans', editingCase.id), patch);
         setEditingCase(null);
       } else {
+        const caseCode = generateCaseCode(formData.registrationPlace, orphans);
         await addDoc(collection(db, 'orphans'), {
           ...formData,
+          caseCode,
           createdAt: serverTimestamp()
         });
         setShowAddForm(false);
