@@ -703,7 +703,8 @@ export default function OrphansScreen() {
         <body>
           <div class="header">
             <h1>استمارة البحث الدوري للأيتام</h1>
-            <p style="margin: 5px 0; color: #059669; font-weight: bold;">مؤسسة هيئة الأعمال الخيرية - فرع الهياتم</p>
+            <p style="margin: 5px 0; color: #059669; font-weight: bold;">${AGENCY_NAMES[orphanCase.registrationPlace || 'none']}</p>
+            ${orphanCase.caseCode ? `<p style="margin: 4px 0; color: #6b7280; font-weight: bold; font-size: 12px;">كود الحالة: ${orphanCase.caseCode}</p>` : ''}
           </div>
 
           <div class="section">
