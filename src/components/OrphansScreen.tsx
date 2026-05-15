@@ -912,7 +912,7 @@ export default function OrphansScreen() {
                   <td>${o.orphans?.map(child => child.schoolStage || '-').join('<br>')}</td>
                   <td>${o.orphans?.map(child => child.schoolGrade || '-').join('<br>')}</td>
                   <td>${o.guardianName}</td>
-                  <td>${o.registrationPlace === 'council' ? 'المجلس الإسلامي' : o.registrationPlace === 'hayatem' ? 'الهياتم' : 'غير مسجلة'}</td>
+                  <td>${o.registrationPlace === 'council' ? 'المجلس الإسلامي' : o.registrationPlace === 'hayatem' ? 'الهياتم' : o.registrationPlace === 'medical' ? 'الحالات المرضية' : 'غير مسجلة'}</td>
                   <td>${o.markaz} - ${o.village}</td>
                   <td>${o.phone1}</td>
                   <td>${o.isSponsored ? 'مكفول (' + o.sponsorshipAmount + ' ج.م)' : 'غير مكفول'}</td>
@@ -1155,7 +1155,7 @@ export default function OrphansScreen() {
                     <div className={`px-3 py-1 rounded-full inline-flex items-center gap-1.5 ${o.registrationPlace !== 'none' ? 'bg-blue-100 text-blue-700' : 'bg-stone-100 text-stone-500'}`}>
                       {o.registrationPlace !== 'none' ? <CheckCircle2 className="w-3 h-3" /> : <X className="w-3 h-3" />}
                       <span className="text-[10px] font-black">
-                        {o.registrationPlace === 'council' ? 'المجلس الإسلامي' : o.registrationPlace === 'hayatem' ? 'الهياتم' : 'غير مسجلة'}
+                        {o.registrationPlace === 'council' ? 'المجلس الإسلامي' : o.registrationPlace === 'hayatem' ? 'الهياتم' : o.registrationPlace === 'medical' ? 'الحالات المرضية' : 'غير مسجلة'}
                       </span>
                     </div>
                   </td>
