@@ -157,6 +157,9 @@ export default function OrphansScreen() {
   const [researchForm, setResearchForm] = useState({
     researchNumber: '',
     researchDate: new Date().toISOString().split('T')[0],
+    targetOrphanIndex: 0,
+    targetOrphanName: '',
+    targetSchoolGrade: '',
     isAlive: true,
     housingType: 'owned' as const,
     rentAmount: 0,
