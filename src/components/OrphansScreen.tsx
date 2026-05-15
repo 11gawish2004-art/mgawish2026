@@ -125,6 +125,7 @@ const SEMESTERS = [
 export default function OrphansScreen() {
   const [orphans, setOrphans] = useState<OrphanCase[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [placeFilter, setPlaceFilter] = useState<'all' | 'council' | 'hayatem' | 'medical'>('all');
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingCase, setEditingCase] = useState<OrphanCase | null>(null);
   const [loading, setLoading] = useState(true);
