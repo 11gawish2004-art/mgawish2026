@@ -30,7 +30,8 @@ const COMMITTEE = [
   'عيشة عبدالقادر علام',
 ];
 const MARITAL_OPTIONS = ['أرملة', 'مطلقة', 'متزوجة', 'عزباء', 'أعزب', 'متزوج', 'مطلق', 'أرمل'];
-const ROWS_PER_PAGE = 18;
+const ROWS_PER_PAGE = 13;
+const toArabicDigits = (v: any) => String(v ?? '').replace(/[0-9]/g, (d) => '٠١٢٣٤٥٦٧٨٩'[+d]);
 const COLUMNS: { key: keyof PayrollItem; label: string }[] = [
   { key: 'name', label: 'الاسم' },
   { key: 'nationalId', label: 'الرقم القومي' },
