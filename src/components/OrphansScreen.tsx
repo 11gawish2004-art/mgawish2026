@@ -958,6 +958,25 @@ export default function OrphansScreen() {
         </div>
       </div>
 
+      {/* Agency Tabs */}
+      <div className="flex flex-wrap gap-2 bg-white p-2 rounded-2xl border border-emerald-100 shadow-sm">
+        {[
+          { id: 'all', label: 'كل الحالات', color: 'emerald' },
+          { id: 'council', label: 'المجلس الإسلامي للدعوة والإغاثة', color: 'blue' },
+          { id: 'hayatem', label: 'الهياتم', color: 'sky' },
+          { id: 'medical', label: 'الحالات المرضية', color: 'rose' },
+        ].map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setPlaceFilter(t.id as any)}
+            className={`flex-1 min-w-[140px] px-4 py-3 rounded-xl text-sm font-black transition-all ${placeFilter === t.id ? `bg-${t.color}-600 text-white shadow-md` : `text-${t.color}-700 hover:bg-${t.color}-50`}`}
+          >
+            {t.label}
+            <span className="mr-2 text-xs opacity-70">({t.id === 'all' ? orphans.length : orphans.filter(o => (o.registrationPlace || 'none') === t.id).length})</span>
+          </button>
+        ))}
+      </div>
+
       {/* Stats Quick View */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-emerald-50 p-6 rounded-3xl border-2 border-emerald-100 flex items-center justify-between">
