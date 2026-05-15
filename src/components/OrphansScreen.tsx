@@ -18,6 +18,7 @@ function cn(...inputs: any[]) {
 
 interface OrphanCase {
   id: string;
+  caseCode?: string;
   guardianName: string;
   guardianId: string;
   orphans: {
@@ -38,11 +39,32 @@ interface OrphanCase {
   filesStatus: 'registered' | 'not_registered';
   researchFormStatus: 'registered' | 'not_registered';
   submissionStatus: 'done' | 'processing';
-  registrationPlace: 'council' | 'hayatem' | 'none';
+  registrationPlace: 'council' | 'hayatem' | 'medical' | 'none';
   requiredDocs: string[];
   attachments?: FileAttachment[];
   createdAt: any;
 }
+
+// Agency display names + case-code prefixes per registrationPlace
+const AGENCY_NAMES: Record<string, string> = {
+  council: 'المجلس الإسلامي للدعوة والإغاثة',
+  hayatem: 'مؤسسة هيئة الأعمال الخيرية - فرع الهياتم',
+  medical: 'قسم الحالات المرضية - هيئة الأعمال الخيرية',
+  none: 'هيئة الأعمال الخيرية',
+};
+const AGENCY_PREFIX: Record<string, string> = {
+  council: 'MID',
+  hayatem: 'HAY',
+  medical: 'MED',
+  none: 'GEN',
+};
+const generateCaseCode = (place: string, existing: OrphanCase[]) => {
+  const prefix = AGENCY_PREFIX[place] || 'GEN';
+  const year = new Date().getFullYear();
+  const sameYear = existing.filter((o) => (o.caseCode || '').startsWith(`${prefix}-${year}-`));
+  const next = String(sameYear.length + 1).padStart(4, '0');
+  return `${prefix}-${year}-${next}`;
+};
 
 const REQUIRED_DOCS_LIST = [
   'بطاقة المعيل',
