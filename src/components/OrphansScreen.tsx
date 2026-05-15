@@ -600,11 +600,13 @@ export default function OrphansScreen() {
   };
 
   const filteredOrphans = orphans
+    .filter(o => placeFilter === 'all' || (o.registrationPlace || 'none') === placeFilter)
     .filter(o => 
       (o.orphans?.some(child => child.name.includes(searchQuery) || child.id.includes(searchQuery)) || 
       o.guardianName.includes(searchQuery) ||
       o.village.includes(searchQuery) ||
-      o.address.includes(searchQuery)) &&
+      o.address.includes(searchQuery) ||
+      (o.caseCode || '').toLowerCase().includes(searchQuery.toLowerCase())) &&
       (o.orphans?.some(child => child.name.toLowerCase().includes(columnFilters.orphanName.toLowerCase())) || columnFilters.orphanName === '') &&
       (o.orphans?.some(child => child.id.includes(columnFilters.orphanId)) || columnFilters.orphanId === '') &&
       o.guardianName.toLowerCase().includes(columnFilters.guardianName.toLowerCase()) &&
