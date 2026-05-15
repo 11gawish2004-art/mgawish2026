@@ -1497,14 +1497,14 @@ export default function OrphansScreen() {
                         <span>الحالة مسجلة في؟</span>
                         <Shield className="w-5 h-5" />
                       </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <button 
                           type="button"
                           onClick={() => setFormData({...formData, registrationPlace: 'council'})}
                           className={`flex items-center justify-center gap-3 p-5 rounded-2xl border-2 transition-all font-black ${formData.registrationPlace === 'council' ? 'bg-white border-blue-600 text-blue-700 shadow-lg scale-[1.02]' : 'bg-white/50 border-stone-100 text-stone-400 hover:bg-white'}`}
                         >
                           <CheckCircle2 className={`w-6 h-6 ${formData.registrationPlace === 'council' ? 'text-blue-600' : 'text-stone-300'}`} />
-                          <span className="text-xl">المجلس الإسلامي للدعوة</span>
+                          <span className="text-base">المجلس الإسلامي للدعوة والإغاثة</span>
                         </button>
 
                         <button 
@@ -1513,16 +1513,25 @@ export default function OrphansScreen() {
                           className={`flex items-center justify-center gap-3 p-5 rounded-2xl border-2 transition-all font-black ${formData.registrationPlace === 'hayatem' ? 'bg-white border-sky-600 text-sky-700 shadow-lg scale-[1.02]' : 'bg-white/50 border-stone-100 text-stone-400 hover:bg-white'}`}
                         >
                           <CheckCircle2 className={`w-6 h-6 ${formData.registrationPlace === 'hayatem' ? 'text-sky-600' : 'text-stone-300'}`} />
-                          <span className="text-xl">الهياتم</span>
+                          <span className="text-base">الهياتم</span>
+                        </button>
+
+                        <button 
+                          type="button"
+                          onClick={() => setFormData({...formData, registrationPlace: 'medical'})}
+                          className={`flex items-center justify-center gap-3 p-5 rounded-2xl border-2 transition-all font-black ${formData.registrationPlace === 'medical' ? 'bg-white border-rose-500 text-rose-600 shadow-lg scale-[1.02]' : 'bg-white/50 border-stone-100 text-stone-400 hover:bg-white'}`}
+                        >
+                          <Heart className={`w-6 h-6 ${formData.registrationPlace === 'medical' ? 'text-rose-500' : 'text-stone-300'}`} />
+                          <span className="text-base">الحالات المرضية</span>
                         </button>
 
                         <button 
                           type="button"
                           onClick={() => setFormData({...formData, registrationPlace: 'none'})}
-                          className={`flex items-center justify-center gap-3 p-5 rounded-2xl border-2 transition-all font-black ${formData.registrationPlace === 'none' ? 'bg-white border-rose-500 text-rose-600 shadow-sm' : 'bg-white/50 border-stone-100 text-stone-400 hover:bg-white'}`}
+                          className={`flex items-center justify-center gap-3 p-5 rounded-2xl border-2 transition-all font-black ${formData.registrationPlace === 'none' ? 'bg-white border-stone-500 text-stone-600 shadow-sm' : 'bg-white/50 border-stone-100 text-stone-400 hover:bg-white'}`}
                         >
-                          <X className={`w-6 h-6 ${formData.registrationPlace === 'none' ? 'text-rose-500' : 'text-stone-300'}`} />
-                          <span className="text-xl">ليست مسجلة</span>
+                          <X className={`w-6 h-6 ${formData.registrationPlace === 'none' ? 'text-stone-500' : 'text-stone-300'}`} />
+                          <span className="text-base">ليست مسجلة</span>
                         </button>
                       </div>
                     </div>
