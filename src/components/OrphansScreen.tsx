@@ -1134,7 +1134,10 @@ export default function OrphansScreen() {
                       onChange={() => toggleSelectOrphan(o.id)}
                     />
                   </td>
-                  <td className="p-5 text-stone-400 font-bold text-xs tabular-nums">{index + 1}</td>
+                  <td className="p-5 text-stone-400 font-bold text-xs tabular-nums">
+                    <div>{index + 1}</div>
+                    {o.caseCode && <div className="mt-1 text-[9px] font-black text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">{o.caseCode}</div>}
+                  </td>
                   <td className="p-5">
                     <div className="flex flex-col gap-1">
                       {o.orphans?.map((child, idx) => (
