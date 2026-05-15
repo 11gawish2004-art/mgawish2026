@@ -710,6 +710,8 @@ export default function OrphansScreen() {
           <div class="section">
             <div class="section-title">بيانات أساسية</div>
             <div class="grid">
+              <div class="item"><span class="label">اسم اليتيم (التقرير):</span> <span class="value">${res.targetOrphanName || orphanCase.orphans?.[res.targetOrphanIndex ?? 0]?.name || '—'}</span></div>
+              <div class="item"><span class="label">الصف الدراسي:</span> <span class="value">${res.targetSchoolGrade || orphanCase.orphans?.[res.targetOrphanIndex ?? 0]?.schoolGrade || '—'}</span></div>
               <div class="item"><span class="label">اسم المعيل:</span> <span class="value">${orphanCase.guardianName}</span></div>
               <div class="item"><span class="label">رقم البحث:</span> <span class="value">${res.researchNumber || 'غير مسجل'}</span></div>
               <div class="item"><span class="label">تاريخ البحث:</span> <span class="value">${res.researchDate || 'غير مسجل'}</span></div>
