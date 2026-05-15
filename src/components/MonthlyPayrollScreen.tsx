@@ -399,10 +399,13 @@ export default function MonthlyPayrollScreen() {
               <div className="left"><img src={logoUrl} alt="logo" /></div>
             </div>
             <div className="title">
-              كشف بأسماء الحالات المستحقة للمساعدة بالجمعية عبارة عن كفالة شهرية بقيمة 100 جنيهات لكل أسرة بتاريخ {active.date || '__/__/20__'}
+              كشف بأسماء الحالات المستحقة للمساعدة بالجمعية عبارة عن كفالة شهرية بقيمة 100 جنيهات لكل أسرة بتاريخ {toArabicDigits(active.date || '__/__/____')}
             </div>
-            <div className="prev">الإجمالي السابق: {fmt(pg.prev)} ج.م &nbsp; | &nbsp; صفحة {idx + 1} من {pages.length}</div>
+            <div className="prev">الإجمالي السابق: {fmt(pg.prev)} ج.م &nbsp; | &nbsp; صفحة {toArabicDigits(idx + 1)} من {toArabicDigits(pages.length)}</div>
             <table>
+              <colgroup>
+                <col className="c-no" /><col className="c-name" /><col className="c-nid" /><col className="c-phone" /><col className="c-mar" /><col className="c-amt" /><col className="c-sig" />
+              </colgroup>
               <thead>
                 <tr>
                   <th>م</th><th>الاسم</th><th>الرقم القومي</th><th>رقم التليفون</th><th>الحالة الاجتماعية</th><th>المبلغ</th><th>التوقيع</th>
@@ -411,10 +414,10 @@ export default function MonthlyPayrollScreen() {
               <tbody>
                 {pg.items.map((it, i) => (
                   <tr key={it.id}>
-                    <td>{idx * ROWS_PER_PAGE + i + 1}</td>
-                    <td>{it.name}</td>
-                    <td>{it.nationalId}</td>
-                    <td>{it.phone}</td>
+                    <td>{toArabicDigits(idx * ROWS_PER_PAGE + i + 1)}</td>
+                    <td className="name">{it.name}</td>
+                    <td>{toArabicDigits(it.nationalId)}</td>
+                    <td>{toArabicDigits(it.phone)}</td>
                     <td>{it.maritalStatus}</td>
                     <td>{fmt(it.amount)}</td>
                     <td></td>
@@ -427,9 +430,9 @@ export default function MonthlyPayrollScreen() {
               <span>الإجمالي التراكمي: {fmt(pg.prev + pg.total)} ج.م</span>
             </div>
             <div className="committee">
-              <div style={{ fontWeight: 800, marginBottom: 6 }}>لجنة التوزيع:</div>
+              <div className="ttl">لجنة التوزيع:</div>
               {COMMITTEE.map((n, i) => (
-                <div key={i} className="row"><span>{i + 1}- {n}</span><span>التوقيع ............................</span></div>
+                <div key={i} className="row"><span>{toArabicDigits(i + 1)}- {n}</span><span>التوقيع ............................</span></div>
               ))}
             </div>
           </div>
