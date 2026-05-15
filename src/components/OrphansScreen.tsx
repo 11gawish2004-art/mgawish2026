@@ -960,16 +960,16 @@ export default function OrphansScreen() {
 
       {/* Agency Tabs */}
       <div className="flex flex-wrap gap-2 bg-white p-2 rounded-2xl border border-emerald-100 shadow-sm">
-        {[
-          { id: 'all', label: 'كل الحالات', color: 'emerald' },
-          { id: 'council', label: 'المجلس الإسلامي للدعوة والإغاثة', color: 'blue' },
-          { id: 'hayatem', label: 'الهياتم', color: 'sky' },
-          { id: 'medical', label: 'الحالات المرضية', color: 'rose' },
-        ].map((t) => (
+        {([
+          { id: 'all', label: 'كل الحالات', active: 'bg-emerald-600 text-white shadow-md', idle: 'text-emerald-700 hover:bg-emerald-50' },
+          { id: 'council', label: 'المجلس الإسلامي للدعوة والإغاثة', active: 'bg-blue-600 text-white shadow-md', idle: 'text-blue-700 hover:bg-blue-50' },
+          { id: 'hayatem', label: 'الهياتم', active: 'bg-sky-600 text-white shadow-md', idle: 'text-sky-700 hover:bg-sky-50' },
+          { id: 'medical', label: 'الحالات المرضية', active: 'bg-rose-600 text-white shadow-md', idle: 'text-rose-700 hover:bg-rose-50' },
+        ] as const).map((t) => (
           <button
             key={t.id}
             onClick={() => setPlaceFilter(t.id as any)}
-            className={`flex-1 min-w-[140px] px-4 py-3 rounded-xl text-sm font-black transition-all ${placeFilter === t.id ? `bg-${t.color}-600 text-white shadow-md` : `text-${t.color}-700 hover:bg-${t.color}-50`}`}
+            className={`flex-1 min-w-[140px] px-4 py-3 rounded-xl text-sm font-black transition-all ${placeFilter === t.id ? t.active : t.idle}`}
           >
             {t.label}
             <span className="mr-2 text-xs opacity-70">({t.id === 'all' ? orphans.length : orphans.filter(o => (o.registrationPlace || 'none') === t.id).length})</span>
