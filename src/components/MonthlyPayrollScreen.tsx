@@ -41,7 +41,7 @@ const COLUMNS: { key: keyof PayrollItem; label: string }[] = [
 ];
 
 const uid = () => Math.random().toString(36).slice(2, 10);
-const fmt = (n: number) => (Number(n) || 0).toLocaleString('ar-EG');
+const fmt = (n: number) => toArabicDigits((Number(n) || 0).toLocaleString('en-US'));
 
 export default function MonthlyPayrollScreen() {
   const [lists, setLists] = useState<PayrollList[]>([]);
