@@ -18,6 +18,7 @@ function cn(...inputs: any[]) {
 
 interface OrphanCase {
   id: string;
+  caseCode?: string;
   guardianName: string;
   guardianId: string;
   orphans: {
@@ -38,11 +39,32 @@ interface OrphanCase {
   filesStatus: 'registered' | 'not_registered';
   researchFormStatus: 'registered' | 'not_registered';
   submissionStatus: 'done' | 'processing';
-  registrationPlace: 'council' | 'hayatem' | 'none';
+  registrationPlace: 'council' | 'hayatem' | 'medical' | 'none';
   requiredDocs: string[];
   attachments?: FileAttachment[];
   createdAt: any;
 }
+
+// Agency display names + case-code prefixes per registrationPlace
+const AGENCY_NAMES: Record<string, string> = {
+  council: 'المجلس الإسلامي للدعوة والإغاثة',
+  hayatem: 'مؤسسة هيئة الأعمال الخيرية - فرع الهياتم',
+  medical: 'قسم الحالات المرضية - هيئة الأعمال الخيرية',
+  none: 'هيئة الأعمال الخيرية',
+};
+const AGENCY_PREFIX: Record<string, string> = {
+  council: 'MID',
+  hayatem: 'HAY',
+  medical: 'MED',
+  none: 'GEN',
+};
+const generateCaseCode = (place: string, existing: OrphanCase[]) => {
+  const prefix = AGENCY_PREFIX[place] || 'GEN';
+  const year = new Date().getFullYear();
+  const sameYear = existing.filter((o) => (o.caseCode || '').startsWith(`${prefix}-${year}-`));
+  const next = String(sameYear.length + 1).padStart(4, '0');
+  return `${prefix}-${year}-${next}`;
+};
 
 const REQUIRED_DOCS_LIST = [
   'بطاقة المعيل',
@@ -61,6 +83,9 @@ interface PeriodicResearch {
   createdAt?: any;
   researchNumber?: string;
   researchDate?: string;
+  targetOrphanIndex?: number; // which orphan in the case this research is for
+  targetOrphanName?: string;
+  targetSchoolGrade?: string; // grade at time of research
   isAlive: boolean;
   housingType: 'owned' | 'rent';
   rentAmount?: number;
@@ -100,6 +125,7 @@ const SEMESTERS = [
 export default function OrphansScreen() {
   const [orphans, setOrphans] = useState<OrphanCase[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [placeFilter, setPlaceFilter] = useState<'all' | 'council' | 'hayatem' | 'medical'>('all');
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingCase, setEditingCase] = useState<OrphanCase | null>(null);
   const [loading, setLoading] = useState(true);
@@ -131,6 +157,9 @@ export default function OrphansScreen() {
   const [researchForm, setResearchForm] = useState({
     researchNumber: '',
     researchDate: new Date().toISOString().split('T')[0],
+    targetOrphanIndex: 0,
+    targetOrphanName: '',
+    targetSchoolGrade: '',
     isAlive: true,
     housingType: 'owned' as const,
     rentAmount: 0,
@@ -347,11 +376,13 @@ export default function OrphansScreen() {
 
   const handleToggleAddResearch = () => {
     if (!showAddResearch && researchList.length > 0) {
-      // Pre-fill from the most recent research
       const last = researchList[0];
       setResearchForm({
-        researchNumber: '', // Keep empty for new
+        researchNumber: '',
         researchDate: new Date().toISOString().split('T')[0],
+        targetOrphanIndex: last.targetOrphanIndex ?? 0,
+        targetOrphanName: '',
+        targetSchoolGrade: '',
         isAlive: last.isAlive ?? true,
         housingType: last.housingType || 'owned',
         rentAmount: last.rentAmount || 0,
@@ -364,6 +395,9 @@ export default function OrphansScreen() {
       setResearchForm({
         researchNumber: '',
         researchDate: new Date().toISOString().split('T')[0],
+        targetOrphanIndex: 0,
+        targetOrphanName: '',
+        targetSchoolGrade: '',
         isAlive: true,
         housingType: 'owned',
         rentAmount: 0,
@@ -384,6 +418,9 @@ export default function OrphansScreen() {
     setResearchForm({
       researchNumber: res.researchNumber || '',
       researchDate: res.researchDate || (res.createdAt?.toDate() ? new Date(res.createdAt.toDate()).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]),
+      targetOrphanIndex: res.targetOrphanIndex ?? 0,
+      targetOrphanName: res.targetOrphanName || '',
+      targetSchoolGrade: res.targetSchoolGrade || '',
       isAlive: res.isAlive ?? true,
       housingType: res.housingType || 'owned',
       rentAmount: res.rentAmount || 0,
@@ -406,15 +443,18 @@ export default function OrphansScreen() {
         : `هل أنت متأكد من حفظ التحديث الدوري لبيانات اليتيم: ${showPeriodicResearch.orphans?.[0]?.name || 'بيانات اليتيم'}؟`,
       onConfirm: async () => {
         try {
+          const targetIdx = researchForm.targetOrphanIndex ?? 0;
+          const targetName = showPeriodicResearch.orphans?.[targetIdx]?.name || researchForm.targetOrphanName || '';
+          const payload = { ...researchForm, targetOrphanIndex: targetIdx, targetOrphanName: targetName };
           if (editingResearch) {
             await updateDoc(doc(db, 'orphans', showPeriodicResearch.id, 'periodic_research', editingResearch.id), {
-              ...researchForm,
+              ...payload,
               updatedAt: serverTimestamp()
             });
             setEditingResearch(null);
           } else {
             await addDoc(collection(db, 'orphans', showPeriodicResearch.id, 'periodic_research'), {
-              ...researchForm,
+              ...payload,
               createdAt: serverTimestamp()
             });
           }
@@ -422,6 +462,9 @@ export default function OrphansScreen() {
           setResearchForm({
             researchNumber: '',
             researchDate: new Date().toISOString().split('T')[0],
+            targetOrphanIndex: 0,
+            targetOrphanName: '',
+            targetSchoolGrade: '',
             isAlive: true,
             housingType: 'owned',
             rentAmount: 0,
@@ -442,14 +485,18 @@ export default function OrphansScreen() {
   const handleConfirmSave = async () => {
     try {
       if (editingCase) {
-        await updateDoc(doc(db, 'orphans', editingCase.id), {
-          ...formData,
-          updatedAt: serverTimestamp()
-        });
+        const patch: any = { ...formData, updatedAt: serverTimestamp() };
+        // Generate caseCode if missing or registrationPlace changed
+        if (!editingCase.caseCode || (editingCase.registrationPlace !== formData.registrationPlace)) {
+          patch.caseCode = generateCaseCode(formData.registrationPlace, orphans);
+        }
+        await updateDoc(doc(db, 'orphans', editingCase.id), patch);
         setEditingCase(null);
       } else {
+        const caseCode = generateCaseCode(formData.registrationPlace, orphans);
         await addDoc(collection(db, 'orphans'), {
           ...formData,
+          caseCode,
           createdAt: serverTimestamp()
         });
         setShowAddForm(false);
@@ -574,11 +621,13 @@ export default function OrphansScreen() {
   };
 
   const filteredOrphans = orphans
+    .filter(o => placeFilter === 'all' || (o.registrationPlace || 'none') === placeFilter)
     .filter(o => 
       (o.orphans?.some(child => child.name.includes(searchQuery) || child.id.includes(searchQuery)) || 
       o.guardianName.includes(searchQuery) ||
       o.village.includes(searchQuery) ||
-      o.address.includes(searchQuery)) &&
+      o.address.includes(searchQuery) ||
+      (o.caseCode || '').toLowerCase().includes(searchQuery.toLowerCase())) &&
       (o.orphans?.some(child => child.name.toLowerCase().includes(columnFilters.orphanName.toLowerCase())) || columnFilters.orphanName === '') &&
       (o.orphans?.some(child => child.id.includes(columnFilters.orphanId)) || columnFilters.orphanId === '') &&
       o.guardianName.toLowerCase().includes(columnFilters.guardianName.toLowerCase()) &&
@@ -671,12 +720,15 @@ export default function OrphansScreen() {
         <body>
           <div class="header">
             <h1>استمارة البحث الدوري للأيتام</h1>
-            <p style="margin: 5px 0; color: #059669; font-weight: bold;">مؤسسة هيئة الأعمال الخيرية - فرع الهياتم</p>
+            <p style="margin: 5px 0; color: #059669; font-weight: bold;">${AGENCY_NAMES[orphanCase.registrationPlace || 'none']}</p>
+            ${orphanCase.caseCode ? `<p style="margin: 4px 0; color: #6b7280; font-weight: bold; font-size: 12px;">كود الحالة: ${orphanCase.caseCode}</p>` : ''}
           </div>
 
           <div class="section">
             <div class="section-title">بيانات أساسية</div>
             <div class="grid">
+              <div class="item"><span class="label">اسم اليتيم (التقرير):</span> <span class="value">${res.targetOrphanName || orphanCase.orphans?.[res.targetOrphanIndex ?? 0]?.name || '—'}</span></div>
+              <div class="item"><span class="label">الصف الدراسي:</span> <span class="value">${res.targetSchoolGrade || orphanCase.orphans?.[res.targetOrphanIndex ?? 0]?.schoolGrade || '—'}</span></div>
               <div class="item"><span class="label">اسم المعيل:</span> <span class="value">${orphanCase.guardianName}</span></div>
               <div class="item"><span class="label">رقم البحث:</span> <span class="value">${res.researchNumber || 'غير مسجل'}</span></div>
               <div class="item"><span class="label">تاريخ البحث:</span> <span class="value">${res.researchDate || 'غير مسجل'}</span></div>
@@ -860,7 +912,7 @@ export default function OrphansScreen() {
                   <td>${o.orphans?.map(child => child.schoolStage || '-').join('<br>')}</td>
                   <td>${o.orphans?.map(child => child.schoolGrade || '-').join('<br>')}</td>
                   <td>${o.guardianName}</td>
-                  <td>${o.registrationPlace === 'council' ? 'المجلس الإسلامي' : o.registrationPlace === 'hayatem' ? 'الهياتم' : 'غير مسجلة'}</td>
+                  <td>${o.registrationPlace === 'council' ? 'المجلس الإسلامي' : o.registrationPlace === 'hayatem' ? 'الهياتم' : o.registrationPlace === 'medical' ? 'الحالات المرضية' : 'غير مسجلة'}</td>
                   <td>${o.markaz} - ${o.village}</td>
                   <td>${o.phone1}</td>
                   <td>${o.isSponsored ? 'مكفول (' + o.sponsorshipAmount + ' ج.م)' : 'غير مكفول'}</td>
@@ -928,6 +980,25 @@ export default function OrphansScreen() {
             <span>إضافة يتيم جديد</span>
           </button>
         </div>
+      </div>
+
+      {/* Agency Tabs */}
+      <div className="flex flex-wrap gap-2 bg-white p-2 rounded-2xl border border-emerald-100 shadow-sm">
+        {([
+          { id: 'all', label: 'كل الحالات', active: 'bg-emerald-600 text-white shadow-md', idle: 'text-emerald-700 hover:bg-emerald-50' },
+          { id: 'council', label: 'المجلس الإسلامي للدعوة والإغاثة', active: 'bg-blue-600 text-white shadow-md', idle: 'text-blue-700 hover:bg-blue-50' },
+          { id: 'hayatem', label: 'الهياتم', active: 'bg-sky-600 text-white shadow-md', idle: 'text-sky-700 hover:bg-sky-50' },
+          { id: 'medical', label: 'الحالات المرضية', active: 'bg-rose-600 text-white shadow-md', idle: 'text-rose-700 hover:bg-rose-50' },
+        ] as const).map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setPlaceFilter(t.id as any)}
+            className={`flex-1 min-w-[140px] px-4 py-3 rounded-xl text-sm font-black transition-all ${placeFilter === t.id ? t.active : t.idle}`}
+          >
+            {t.label}
+            <span className="mr-2 text-xs opacity-70">({t.id === 'all' ? orphans.length : orphans.filter(o => (o.registrationPlace || 'none') === t.id).length})</span>
+          </button>
+        ))}
       </div>
 
       {/* Stats Quick View */}
@@ -1063,7 +1134,10 @@ export default function OrphansScreen() {
                       onChange={() => toggleSelectOrphan(o.id)}
                     />
                   </td>
-                  <td className="p-5 text-stone-400 font-bold text-xs tabular-nums">{index + 1}</td>
+                  <td className="p-5 text-stone-400 font-bold text-xs tabular-nums">
+                    <div>{index + 1}</div>
+                    {o.caseCode && <div className="mt-1 text-[9px] font-black text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">{o.caseCode}</div>}
+                  </td>
                   <td className="p-5">
                     <div className="flex flex-col gap-1">
                       {o.orphans?.map((child, idx) => (
@@ -1081,7 +1155,7 @@ export default function OrphansScreen() {
                     <div className={`px-3 py-1 rounded-full inline-flex items-center gap-1.5 ${o.registrationPlace !== 'none' ? 'bg-blue-100 text-blue-700' : 'bg-stone-100 text-stone-500'}`}>
                       {o.registrationPlace !== 'none' ? <CheckCircle2 className="w-3 h-3" /> : <X className="w-3 h-3" />}
                       <span className="text-[10px] font-black">
-                        {o.registrationPlace === 'council' ? 'المجلس الإسلامي' : o.registrationPlace === 'hayatem' ? 'الهياتم' : 'غير مسجلة'}
+                        {o.registrationPlace === 'council' ? 'المجلس الإسلامي' : o.registrationPlace === 'hayatem' ? 'الهياتم' : o.registrationPlace === 'medical' ? 'الحالات المرضية' : 'غير مسجلة'}
                       </span>
                     </div>
                   </td>
@@ -1450,14 +1524,14 @@ export default function OrphansScreen() {
                         <span>الحالة مسجلة في؟</span>
                         <Shield className="w-5 h-5" />
                       </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <button 
                           type="button"
                           onClick={() => setFormData({...formData, registrationPlace: 'council'})}
                           className={`flex items-center justify-center gap-3 p-5 rounded-2xl border-2 transition-all font-black ${formData.registrationPlace === 'council' ? 'bg-white border-blue-600 text-blue-700 shadow-lg scale-[1.02]' : 'bg-white/50 border-stone-100 text-stone-400 hover:bg-white'}`}
                         >
                           <CheckCircle2 className={`w-6 h-6 ${formData.registrationPlace === 'council' ? 'text-blue-600' : 'text-stone-300'}`} />
-                          <span className="text-xl">المجلس الإسلامي للدعوة</span>
+                          <span className="text-base">المجلس الإسلامي للدعوة والإغاثة</span>
                         </button>
 
                         <button 
@@ -1466,16 +1540,25 @@ export default function OrphansScreen() {
                           className={`flex items-center justify-center gap-3 p-5 rounded-2xl border-2 transition-all font-black ${formData.registrationPlace === 'hayatem' ? 'bg-white border-sky-600 text-sky-700 shadow-lg scale-[1.02]' : 'bg-white/50 border-stone-100 text-stone-400 hover:bg-white'}`}
                         >
                           <CheckCircle2 className={`w-6 h-6 ${formData.registrationPlace === 'hayatem' ? 'text-sky-600' : 'text-stone-300'}`} />
-                          <span className="text-xl">الهياتم</span>
+                          <span className="text-base">الهياتم</span>
+                        </button>
+
+                        <button 
+                          type="button"
+                          onClick={() => setFormData({...formData, registrationPlace: 'medical'})}
+                          className={`flex items-center justify-center gap-3 p-5 rounded-2xl border-2 transition-all font-black ${formData.registrationPlace === 'medical' ? 'bg-white border-rose-500 text-rose-600 shadow-lg scale-[1.02]' : 'bg-white/50 border-stone-100 text-stone-400 hover:bg-white'}`}
+                        >
+                          <Heart className={`w-6 h-6 ${formData.registrationPlace === 'medical' ? 'text-rose-500' : 'text-stone-300'}`} />
+                          <span className="text-base">الحالات المرضية</span>
                         </button>
 
                         <button 
                           type="button"
                           onClick={() => setFormData({...formData, registrationPlace: 'none'})}
-                          className={`flex items-center justify-center gap-3 p-5 rounded-2xl border-2 transition-all font-black ${formData.registrationPlace === 'none' ? 'bg-white border-rose-500 text-rose-600 shadow-sm' : 'bg-white/50 border-stone-100 text-stone-400 hover:bg-white'}`}
+                          className={`flex items-center justify-center gap-3 p-5 rounded-2xl border-2 transition-all font-black ${formData.registrationPlace === 'none' ? 'bg-white border-stone-500 text-stone-600 shadow-sm' : 'bg-white/50 border-stone-100 text-stone-400 hover:bg-white'}`}
                         >
-                          <X className={`w-6 h-6 ${formData.registrationPlace === 'none' ? 'text-rose-500' : 'text-stone-300'}`} />
-                          <span className="text-xl">ليست مسجلة</span>
+                          <X className={`w-6 h-6 ${formData.registrationPlace === 'none' ? 'text-stone-500' : 'text-stone-300'}`} />
+                          <span className="text-base">ليست مسجلة</span>
                         </button>
                       </div>
                     </div>
@@ -1702,6 +1785,32 @@ export default function OrphansScreen() {
                     animate={{ height: 'auto', opacity: 1 }}
                     className="bg-stone-50 p-6 rounded-3xl border-2 border-dashed border-emerald-200 space-y-6"
                   >
+                    {/* Per-orphan selector + school grade */}
+                    <div className="bg-amber-50/60 border-2 border-amber-200 rounded-2xl p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2 text-right">
+                        <label className="text-xs font-black text-amber-700 pr-2">يخص اليتيم *</label>
+                        <select
+                          value={researchForm.targetOrphanIndex}
+                          onChange={(e) => setResearchForm({ ...researchForm, targetOrphanIndex: parseInt(e.target.value) || 0 })}
+                          className="w-full p-4 rounded-xl border border-amber-200 outline-none font-bold text-right bg-white"
+                        >
+                          {(showPeriodicResearch?.orphans || []).map((ch, idx) => (
+                            <option key={idx} value={idx}>{ch.name || `يتيم ${idx + 1}`}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="space-y-2 text-right">
+                        <label className="text-xs font-black text-amber-700 pr-2">الصف الدراسي وقت البحث</label>
+                        <input
+                          type="text"
+                          value={researchForm.targetSchoolGrade}
+                          onChange={(e) => setResearchForm({ ...researchForm, targetSchoolGrade: e.target.value })}
+                          className="w-full p-4 rounded-xl border border-amber-200 outline-none font-bold text-right bg-white"
+                          placeholder="مثال: الصف الرابع الابتدائي"
+                        />
+                      </div>
+                    </div>
+
                     {/* Basic Meta Info */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                       <div className="space-y-2 text-right">
