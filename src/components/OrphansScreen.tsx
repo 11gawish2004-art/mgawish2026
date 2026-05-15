@@ -83,6 +83,9 @@ interface PeriodicResearch {
   createdAt?: any;
   researchNumber?: string;
   researchDate?: string;
+  targetOrphanIndex?: number; // which orphan in the case this research is for
+  targetOrphanName?: string;
+  targetSchoolGrade?: string; // grade at time of research
   isAlive: boolean;
   housingType: 'owned' | 'rent';
   rentAmount?: number;
