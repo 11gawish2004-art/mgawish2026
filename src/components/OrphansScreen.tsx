@@ -443,15 +443,18 @@ export default function OrphansScreen() {
         : `هل أنت متأكد من حفظ التحديث الدوري لبيانات اليتيم: ${showPeriodicResearch.orphans?.[0]?.name || 'بيانات اليتيم'}؟`,
       onConfirm: async () => {
         try {
+          const targetIdx = researchForm.targetOrphanIndex ?? 0;
+          const targetName = showPeriodicResearch.orphans?.[targetIdx]?.name || researchForm.targetOrphanName || '';
+          const payload = { ...researchForm, targetOrphanIndex: targetIdx, targetOrphanName: targetName };
           if (editingResearch) {
             await updateDoc(doc(db, 'orphans', showPeriodicResearch.id, 'periodic_research', editingResearch.id), {
-              ...researchForm,
+              ...payload,
               updatedAt: serverTimestamp()
             });
             setEditingResearch(null);
           } else {
             await addDoc(collection(db, 'orphans', showPeriodicResearch.id, 'periodic_research'), {
-              ...researchForm,
+              ...payload,
               createdAt: serverTimestamp()
             });
           }
