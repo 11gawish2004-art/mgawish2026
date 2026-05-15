@@ -1782,6 +1782,32 @@ export default function OrphansScreen() {
                     animate={{ height: 'auto', opacity: 1 }}
                     className="bg-stone-50 p-6 rounded-3xl border-2 border-dashed border-emerald-200 space-y-6"
                   >
+                    {/* Per-orphan selector + school grade */}
+                    <div className="bg-amber-50/60 border-2 border-amber-200 rounded-2xl p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2 text-right">
+                        <label className="text-xs font-black text-amber-700 pr-2">يخص اليتيم *</label>
+                        <select
+                          value={researchForm.targetOrphanIndex}
+                          onChange={(e) => setResearchForm({ ...researchForm, targetOrphanIndex: parseInt(e.target.value) || 0 })}
+                          className="w-full p-4 rounded-xl border border-amber-200 outline-none font-bold text-right bg-white"
+                        >
+                          {(showPeriodicResearch?.orphans || []).map((ch, idx) => (
+                            <option key={idx} value={idx}>{ch.name || `يتيم ${idx + 1}`}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="space-y-2 text-right">
+                        <label className="text-xs font-black text-amber-700 pr-2">الصف الدراسي وقت البحث</label>
+                        <input
+                          type="text"
+                          value={researchForm.targetSchoolGrade}
+                          onChange={(e) => setResearchForm({ ...researchForm, targetSchoolGrade: e.target.value })}
+                          className="w-full p-4 rounded-xl border border-amber-200 outline-none font-bold text-right bg-white"
+                          placeholder="مثال: الصف الرابع الابتدائي"
+                        />
+                      </div>
+                    </div>
+
                     {/* Basic Meta Info */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                       <div className="space-y-2 text-right">
