@@ -366,7 +366,7 @@ export default function MonthlyPayrollScreen() {
             )}
             {view.map((it, i) => (
               <tr key={it.id} className="border-t border-emerald-50 hover:bg-emerald-50/30">
-                <td className="p-2 text-center font-bold text-emerald-700 tabular-nums">{i + 1}</td>
+                <td className="p-2 text-center font-black tabular-nums" style={it.color ? { background: it.color, color: '#111' } : { color: '#047857' }}>{i + 1}</td>
                 <td className="p-1"><input value={it.name} onChange={(e) => updItem(it.id, { name: e.target.value })} className="w-full px-2 py-2 rounded-lg border border-transparent focus:border-emerald-200 outline-none" /></td>
                 <td className="p-1"><input value={it.nationalId} onChange={(e) => updItem(it.id, { nationalId: e.target.value })} className="w-full px-2 py-2 rounded-lg border border-transparent focus:border-emerald-200 outline-none tabular-nums" /></td>
                 <td className="p-1"><input value={it.phone} onChange={(e) => updItem(it.id, { phone: e.target.value })} className="w-full px-2 py-2 rounded-lg border border-transparent focus:border-emerald-200 outline-none tabular-nums" /></td>
@@ -374,7 +374,12 @@ export default function MonthlyPayrollScreen() {
                   <input list="marital-opts" value={it.maritalStatus} onChange={(e) => updItem(it.id, { maritalStatus: e.target.value })} className="w-full px-2 py-2 rounded-lg border border-transparent focus:border-emerald-200 outline-none" />
                 </td>
                 <td className="p-1"><input type="number" value={it.amount} onChange={(e) => updItem(it.id, { amount: parseFloat(e.target.value) || 0 })} className="w-full px-2 py-2 rounded-lg border border-transparent focus:border-emerald-200 outline-none tabular-nums" /></td>
-                <td className="p-2"><button onClick={() => delItem(it.id)} className="text-rose-500 hover:bg-rose-50 p-2 rounded-lg"><Trash2 className="w-4 h-4" /></button></td>
+                <td className="p-2">
+                  <div className="flex items-center gap-1">
+                    <ColorMenu value={it.color} onChange={(c) => updItem(it.id, { color: c })} />
+                    <button onClick={() => delItem(it.id)} className="text-rose-500 hover:bg-rose-50 p-2 rounded-lg" title="حذف"><Trash2 className="w-4 h-4" /></button>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
