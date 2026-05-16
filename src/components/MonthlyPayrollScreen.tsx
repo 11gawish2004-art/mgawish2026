@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Plus, Trash2, Printer, FileUp, FileDown, ArrowUpDown, Search, X, Loader2, Edit3, FileSpreadsheet, ChevronDown } from 'lucide-react';
+import { Plus, Trash2, Printer, FileUp, FileDown, ArrowUpDown, Search, X, Loader2, Edit3, FileSpreadsheet, ChevronDown, Palette } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { db } from '../lib/firebase';
 import { collection, onSnapshot, addDoc, query, orderBy, serverTimestamp, deleteDoc, doc, updateDoc } from 'firebase/firestore';
