@@ -32,6 +32,7 @@ import AboutScreen from './components/AboutScreen';
 import Logo from './components/Logo';
 import VoiceAssistant from './components/VoiceAssistant';
 import MonthlyPayrollScreen from './components/MonthlyPayrollScreen';
+import DuplicatesScreen from './components/DuplicatesScreen';
 
 const DEVELOPER_EMAIL = '11gawish2004@gmail.com';
 
