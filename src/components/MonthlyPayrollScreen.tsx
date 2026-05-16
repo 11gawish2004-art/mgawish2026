@@ -403,7 +403,7 @@ export default function MonthlyPayrollScreen() {
               <div className="left"><img src={logoUrl} alt="logo" /></div>
             </div>
             <div className="title">
-              كشف بأسماء الحالات المستحقة للمساعدة بالجمعية عبارة عن كفالة شهرية بقيمة 100 جنيهات لكل أسرة بتاريخ {toArabicDigits(active.date || '__/__/____')}
+              كشف بأسماء الحالات المستحقة للمساعدة بالجمعية عبارة عن كفالة شهرية بقيمة ١٠٠ جنيهات لكل أسرة بتاريخ {active.date ? toArabicDigits(active.date) : '   /   / ٢٠'}
             </div>
             <div className="prev">الإجمالي السابق: {fmt(pg.prev)} ج.م &nbsp; | &nbsp; صفحة {toArabicDigits(idx + 1)} من {toArabicDigits(pages.length)}</div>
             <table>
@@ -418,7 +418,7 @@ export default function MonthlyPayrollScreen() {
               <tbody>
                 {pg.items.map((it, i) => (
                   <tr key={it.id}>
-                    <td>{toArabicDigits(idx * ROWS_PER_PAGE + i + 1)}</td>
+                    <td className="no" style={it.color ? { background: it.color } : undefined}>{toArabicDigits(idx * ROWS_PER_PAGE + i + 1)}</td>
                     <td className="name">{it.name}</td>
                     <td>{toArabicDigits(it.nationalId)}</td>
                     <td>{toArabicDigits(it.phone)}</td>
