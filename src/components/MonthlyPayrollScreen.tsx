@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Plus, Trash2, Printer, FileUp, FileDown, ArrowUpDown, Search, X, Loader2, Edit3, FileSpreadsheet, ChevronDown } from 'lucide-react';
+import { Plus, Trash2, Printer, FileUp, FileDown, ArrowUpDown, Search, X, Loader2, Edit3, FileSpreadsheet, ChevronDown, Palette } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { db } from '../lib/firebase';
 import { collection, onSnapshot, addDoc, query, orderBy, serverTimestamp, deleteDoc, doc, updateDoc } from 'firebase/firestore';
@@ -15,7 +15,10 @@ interface PayrollItem {
   phone: string;
   maritalStatus: string;
   amount: number;
+  color?: string;
 }
+
+const ROW_COLORS = ['', '#fde68a', '#bbf7d0', '#fecaca', '#bfdbfe', '#ddd6fe', '#fbcfe8', '#fed7aa'];
 interface PayrollList {
   id: string;
   title: string;
@@ -229,9 +232,9 @@ export default function MonthlyPayrollScreen() {
         .hdr .left img { width: 75px; height: 75px; object-fit: contain; }
         .title { text-align: center; margin: 6px 0; font-weight: 800; font-size: 13px; line-height: 1.5; }
         .prev { text-align: left; font-weight: 700; font-size: 11px; margin: 2px 0; }
-        table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 4px; table-layout: fixed; flex: 1; }
-        th, td { border: 1px solid #333; padding: 4px 3px; text-align: center; vertical-align: middle; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; }
-        th { background: #ecfdf5; font-weight: 800; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 4px; table-layout: fixed; flex: 1; font-weight: 600; }
+        th, td { border: 1.2px solid #111; padding: 6px 4px; text-align: center; vertical-align: middle; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; }
+        th { background: #ecfdf5; font-weight: 900; font-size: 13.5px; }
         col.c-no { width: 6%; }
         col.c-name { width: 22%; }
         col.c-nid { width: 14%; }
@@ -239,11 +242,12 @@ export default function MonthlyPayrollScreen() {
         col.c-mar { width: 10%; }
         col.c-amt { width: 9%; }
         col.c-sig { width: 28%; }
-        td.name { font-size: 11.5px; line-height: 1.35; text-align: right; padding-right: 6px; }
-        .totals { margin-top: 6px; font-weight: 800; font-size: 12px; display:flex; justify-content: space-between; border-top: 2px dashed #047857; padding-top: 4px; }
-        .committee { margin-top: 6px; font-size: 11.5px; }
+        td.name { font-size: 13.5px; line-height: 1.4; text-align: right; padding-right: 6px; font-weight: 700; }
+        td.no { font-weight: 900; }
+        .totals { margin-top: 6px; font-weight: 900; font-size: 13px; display:flex; justify-content: space-between; border-top: 2px dashed #047857; padding-top: 4px; }
+        .committee { margin-top: 6px; font-size: 12.5px; }
         .committee .row { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px dotted #999; }
-        .committee .ttl { font-weight: 800; margin-bottom: 4px; }
+        .committee .ttl { font-weight: 900; margin-bottom: 4px; }
       </style>`;
     w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${active?.title || 'كشف القبض الشهري'}</title>${styles}</head><body>${printRef.current.innerHTML}</body></html>`);
     w.document.close();
@@ -362,7 +366,7 @@ export default function MonthlyPayrollScreen() {
             )}
             {view.map((it, i) => (
               <tr key={it.id} className="border-t border-emerald-50 hover:bg-emerald-50/30">
-                <td className="p-2 text-center font-bold text-emerald-700 tabular-nums">{i + 1}</td>
+                <td className="p-2 text-center font-black tabular-nums" style={it.color ? { background: it.color, color: '#111' } : { color: '#047857' }}>{i + 1}</td>
                 <td className="p-1"><input value={it.name} onChange={(e) => updItem(it.id, { name: e.target.value })} className="w-full px-2 py-2 rounded-lg border border-transparent focus:border-emerald-200 outline-none" /></td>
                 <td className="p-1"><input value={it.nationalId} onChange={(e) => updItem(it.id, { nationalId: e.target.value })} className="w-full px-2 py-2 rounded-lg border border-transparent focus:border-emerald-200 outline-none tabular-nums" /></td>
                 <td className="p-1"><input value={it.phone} onChange={(e) => updItem(it.id, { phone: e.target.value })} className="w-full px-2 py-2 rounded-lg border border-transparent focus:border-emerald-200 outline-none tabular-nums" /></td>
@@ -370,7 +374,12 @@ export default function MonthlyPayrollScreen() {
                   <input list="marital-opts" value={it.maritalStatus} onChange={(e) => updItem(it.id, { maritalStatus: e.target.value })} className="w-full px-2 py-2 rounded-lg border border-transparent focus:border-emerald-200 outline-none" />
                 </td>
                 <td className="p-1"><input type="number" value={it.amount} onChange={(e) => updItem(it.id, { amount: parseFloat(e.target.value) || 0 })} className="w-full px-2 py-2 rounded-lg border border-transparent focus:border-emerald-200 outline-none tabular-nums" /></td>
-                <td className="p-2"><button onClick={() => delItem(it.id)} className="text-rose-500 hover:bg-rose-50 p-2 rounded-lg"><Trash2 className="w-4 h-4" /></button></td>
+                <td className="p-2">
+                  <div className="flex items-center gap-1">
+                    <ColorMenu value={it.color} onChange={(c) => updItem(it.id, { color: c })} />
+                    <button onClick={() => delItem(it.id)} className="text-rose-500 hover:bg-rose-50 p-2 rounded-lg" title="حذف"><Trash2 className="w-4 h-4" /></button>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -399,7 +408,7 @@ export default function MonthlyPayrollScreen() {
               <div className="left"><img src={logoUrl} alt="logo" /></div>
             </div>
             <div className="title">
-              كشف بأسماء الحالات المستحقة للمساعدة بالجمعية عبارة عن كفالة شهرية بقيمة 100 جنيهات لكل أسرة بتاريخ {toArabicDigits(active.date || '__/__/____')}
+              كشف بأسماء الحالات المستحقة للمساعدة بالجمعية عبارة عن كفالة شهرية بقيمة ١٠٠ جنيهات لكل أسرة بتاريخ {active.date ? toArabicDigits(active.date) : '   /   / ٢٠'}
             </div>
             <div className="prev">الإجمالي السابق: {fmt(pg.prev)} ج.م &nbsp; | &nbsp; صفحة {toArabicDigits(idx + 1)} من {toArabicDigits(pages.length)}</div>
             <table>
@@ -414,7 +423,7 @@ export default function MonthlyPayrollScreen() {
               <tbody>
                 {pg.items.map((it, i) => (
                   <tr key={it.id}>
-                    <td>{toArabicDigits(idx * ROWS_PER_PAGE + i + 1)}</td>
+                    <td className="no" style={it.color ? { background: it.color } : undefined}>{toArabicDigits(idx * ROWS_PER_PAGE + i + 1)}</td>
                     <td className="name">{it.name}</td>
                     <td>{toArabicDigits(it.nationalId)}</td>
                     <td>{toArabicDigits(it.phone)}</td>
@@ -506,6 +515,40 @@ function SortPicker({ label, value, onChange }: { label: string; value: any; onC
             </div>
           ))}
         </div>
+      )}
+    </div>
+  );
+}
+
+function ColorMenu({ value, onChange }: { value?: string; onChange: (c: string) => void }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="p-2 rounded-lg border border-stone-200 hover:bg-stone-50 flex items-center"
+        title="تلوين الحالة"
+        style={value ? { background: value } : undefined}
+      >
+        <Palette className="w-4 h-4 text-stone-700" />
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-20" onClick={() => setOpen(false)} />
+          <div className="absolute top-full mt-1 left-0 bg-white border border-stone-200 rounded-xl shadow-lg z-30 p-2 flex flex-wrap gap-1.5 w-44">
+            {ROW_COLORS.map((c, i) => (
+              <button
+                key={i}
+                onClick={() => { onChange(c); setOpen(false); }}
+                className="w-7 h-7 rounded-lg border-2 border-stone-200 hover:scale-110 transition flex items-center justify-center"
+                style={{ background: c || '#fff' }}
+                title={c || 'بدون لون'}
+              >
+                {!c && <X className="w-3 h-3 text-stone-400" />}
+              </button>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
