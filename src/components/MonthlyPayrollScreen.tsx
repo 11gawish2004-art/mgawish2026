@@ -519,3 +519,37 @@ function SortPicker({ label, value, onChange }: { label: string; value: any; onC
     </div>
   );
 }
+
+function ColorMenu({ value, onChange }: { value?: string; onChange: (c: string) => void }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="p-2 rounded-lg border border-stone-200 hover:bg-stone-50 flex items-center"
+        title="تلوين الحالة"
+        style={value ? { background: value } : undefined}
+      >
+        <Palette className="w-4 h-4 text-stone-700" />
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-20" onClick={() => setOpen(false)} />
+          <div className="absolute top-full mt-1 left-0 bg-white border border-stone-200 rounded-xl shadow-lg z-30 p-2 flex flex-wrap gap-1.5 w-44">
+            {ROW_COLORS.map((c, i) => (
+              <button
+                key={i}
+                onClick={() => { onChange(c); setOpen(false); }}
+                className="w-7 h-7 rounded-lg border-2 border-stone-200 hover:scale-110 transition flex items-center justify-center"
+                style={{ background: c || '#fff' }}
+                title={c || 'بدون لون'}
+              >
+                {!c && <X className="w-3 h-3 text-stone-400" />}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
