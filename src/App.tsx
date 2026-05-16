@@ -365,7 +365,7 @@ export default function App() {
     if (user.email === DEVELOPER_EMAIL) {
       setUserConfig({
         email: user.email,
-        permissions: ['dashboard', 'reception', 'cases', 'seasonal', 'medical', 'whatsapp', 'marriage', 'accounts', 'parties', 'campaigns', 'news', 'volunteers', 'logs', 'activities', 'orphans', 'payroll', 'developer'],
+        permissions: ['dashboard', 'reception', 'cases', 'seasonal', 'medical', 'whatsapp', 'marriage', 'accounts', 'parties', 'campaigns', 'news', 'volunteers', 'logs', 'activities', 'orphans', 'payroll', 'duplicates', 'developer'],
         isAdmin: true
       });
       return;
