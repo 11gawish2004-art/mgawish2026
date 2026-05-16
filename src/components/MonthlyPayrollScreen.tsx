@@ -232,9 +232,9 @@ export default function MonthlyPayrollScreen() {
         .hdr .left img { width: 75px; height: 75px; object-fit: contain; }
         .title { text-align: center; margin: 6px 0; font-weight: 800; font-size: 13px; line-height: 1.5; }
         .prev { text-align: left; font-weight: 700; font-size: 11px; margin: 2px 0; }
-        table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 4px; table-layout: fixed; flex: 1; }
-        th, td { border: 1px solid #333; padding: 4px 3px; text-align: center; vertical-align: middle; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; }
-        th { background: #ecfdf5; font-weight: 800; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 4px; table-layout: fixed; flex: 1; font-weight: 600; }
+        th, td { border: 1.2px solid #111; padding: 6px 4px; text-align: center; vertical-align: middle; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; }
+        th { background: #ecfdf5; font-weight: 900; font-size: 13.5px; }
         col.c-no { width: 6%; }
         col.c-name { width: 22%; }
         col.c-nid { width: 14%; }
@@ -242,11 +242,12 @@ export default function MonthlyPayrollScreen() {
         col.c-mar { width: 10%; }
         col.c-amt { width: 9%; }
         col.c-sig { width: 28%; }
-        td.name { font-size: 11.5px; line-height: 1.35; text-align: right; padding-right: 6px; }
-        .totals { margin-top: 6px; font-weight: 800; font-size: 12px; display:flex; justify-content: space-between; border-top: 2px dashed #047857; padding-top: 4px; }
-        .committee { margin-top: 6px; font-size: 11.5px; }
+        td.name { font-size: 13.5px; line-height: 1.4; text-align: right; padding-right: 6px; font-weight: 700; }
+        td.no { font-weight: 900; }
+        .totals { margin-top: 6px; font-weight: 900; font-size: 13px; display:flex; justify-content: space-between; border-top: 2px dashed #047857; padding-top: 4px; }
+        .committee { margin-top: 6px; font-size: 12.5px; }
         .committee .row { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px dotted #999; }
-        .committee .ttl { font-weight: 800; margin-bottom: 4px; }
+        .committee .ttl { font-weight: 900; margin-bottom: 4px; }
       </style>`;
     w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${active?.title || 'كشف القبض الشهري'}</title>${styles}</head><body>${printRef.current.innerHTML}</body></html>`);
     w.document.close();
