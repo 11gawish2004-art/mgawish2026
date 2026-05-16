@@ -15,7 +15,10 @@ interface PayrollItem {
   phone: string;
   maritalStatus: string;
   amount: number;
+  color?: string;
 }
+
+const ROW_COLORS = ['', '#fde68a', '#bbf7d0', '#fecaca', '#bfdbfe', '#ddd6fe', '#fbcfe8', '#fed7aa'];
 interface PayrollList {
   id: string;
   title: string;
