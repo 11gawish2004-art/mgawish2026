@@ -6,7 +6,7 @@
 
 import React, { useState, useEffect, ReactNode } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Heart, ClipboardList, Menu, X, PlusCircle, LogIn, LogOut, UserCheck, Megaphone, Shield, ChevronUp, ChevronDown, Newspaper, Download, Terminal, DollarSign, MessageCircle, Lock, Box, UserPlus, Stethoscope, PartyPopper, Building, Loader2 } from 'lucide-react';
+import { LayoutDashboard, Users, Heart, ClipboardList, Menu, X, PlusCircle, LogIn, LogOut, UserCheck, Megaphone, Shield, ChevronUp, ChevronDown, Newspaper, Download, Terminal, DollarSign, MessageCircle, Lock, Box, UserPlus, Stethoscope, PartyPopper, Building, Loader2, ShieldAlert } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
