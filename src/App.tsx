@@ -606,6 +606,9 @@ export default function App() {
               {(userConfig?.isAdmin || user.email === DEVELOPER_EMAIL || userConfig?.permissions?.includes('payroll')) && (
                 <Route path="/payroll" element={<MonthlyPayrollScreen />} />
               )}
+              {(userConfig?.isAdmin || user.email === DEVELOPER_EMAIL || userConfig?.permissions?.includes('duplicates')) && (
+                <Route path="/duplicates" element={<DuplicatesScreen />} />
+              )}
             </Routes>
           </div>
 
