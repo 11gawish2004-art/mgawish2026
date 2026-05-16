@@ -6,7 +6,7 @@
 
 import React, { useState, useEffect, ReactNode } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Heart, ClipboardList, Menu, X, PlusCircle, LogIn, LogOut, UserCheck, Megaphone, Shield, ChevronUp, ChevronDown, Newspaper, Download, Terminal, DollarSign, MessageCircle, Lock, Box, UserPlus, Stethoscope, PartyPopper, Building, Loader2 } from 'lucide-react';
+import { LayoutDashboard, Users, Heart, ClipboardList, Menu, X, PlusCircle, LogIn, LogOut, UserCheck, Megaphone, Shield, ChevronUp, ChevronDown, Newspaper, Download, Terminal, DollarSign, MessageCircle, Lock, Box, UserPlus, Stethoscope, PartyPopper, Building, Loader2, ShieldAlert } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -32,6 +32,7 @@ import AboutScreen from './components/AboutScreen';
 import Logo from './components/Logo';
 import VoiceAssistant from './components/VoiceAssistant';
 import MonthlyPayrollScreen from './components/MonthlyPayrollScreen';
+import DuplicatesScreen from './components/DuplicatesScreen';
 
 const DEVELOPER_EMAIL = '11gawish2004@gmail.com';
 
@@ -308,6 +309,7 @@ function NavLinks({ onLinkClick, userConfig }: { onLinkClick?: () => void, userC
     { to: "/activities", icon: <ClipboardList className="w-5 h-5" />, label: "الأنشطة", id: 'activities' },
     { to: "/orphans", icon: <Heart className="w-5 h-5" />, label: "هيئة الأعمال", id: 'orphans' },
     { to: "/payroll", icon: <DollarSign className="w-5 h-5" />, label: "كشف القبض الشهري", id: 'payroll' },
+    { to: "/duplicates", icon: <ShieldAlert className="w-5 h-5" />, label: "كاشف التكرار", id: 'duplicates' },
     { to: "/developer", icon: <Terminal className="w-5 h-5" />, label: "المبرمج", id: 'developer' },
   ];
 
@@ -363,7 +365,7 @@ export default function App() {
     if (user.email === DEVELOPER_EMAIL) {
       setUserConfig({
         email: user.email,
-        permissions: ['dashboard', 'reception', 'cases', 'seasonal', 'medical', 'whatsapp', 'marriage', 'accounts', 'parties', 'campaigns', 'news', 'volunteers', 'logs', 'activities', 'orphans', 'payroll', 'developer'],
+        permissions: ['dashboard', 'reception', 'cases', 'seasonal', 'medical', 'whatsapp', 'marriage', 'accounts', 'parties', 'campaigns', 'news', 'volunteers', 'logs', 'activities', 'orphans', 'payroll', 'duplicates', 'developer'],
         isAdmin: true
       });
       return;
@@ -603,6 +605,9 @@ export default function App() {
               )}
               {(userConfig?.isAdmin || user.email === DEVELOPER_EMAIL || userConfig?.permissions?.includes('payroll')) && (
                 <Route path="/payroll" element={<MonthlyPayrollScreen />} />
+              )}
+              {(userConfig?.isAdmin || user.email === DEVELOPER_EMAIL || userConfig?.permissions?.includes('duplicates')) && (
+                <Route path="/duplicates" element={<DuplicatesScreen />} />
               )}
             </Routes>
           </div>
