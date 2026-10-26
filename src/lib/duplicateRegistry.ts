@@ -64,6 +64,18 @@ export const SECTIONS: SectionDef[] = [
       name: it.name || '', nationalId: it.nationalId || '', phone: it.phone || '', subKey: `item-${i}`,
     })),
   },
+  {
+    id: 'medical',
+    label: 'الحالات المرضية',
+    collection: 'medicalCases',
+    route: '/medical-records',
+    extract: (d) => {
+      const out: any[] = [];
+      if (d.name) out.push({ name: d.name, nationalId: d.nationalId || '', phone: d.phone || '' });
+      if (d.guardianName) out.push({ name: d.guardianName, nationalId: d.guardianNationalId || '', phone: d.guardianPhone || d.phone || '', subKey: 'guardian' });
+      return out;
+    },
+  },
 ];
 
 export interface RegistryEntry {
@@ -82,53 +94,97 @@ const normalizeName = (s: string) =>
   (s || '').replace(/\s+/g, ' ').trim().toLowerCase();
 const normalizeNid = (s: string) => (s || '').replace(/[^0-9]/g, '');
 
-export function useDuplicateRegistry() {
-  const [bySection, setBySection] = useState<Record<string, any[]>>({});
-  const [loading, setLoading] = useState(true);
+// ============ Shared singleton registry (one live subscription set for all consumers) ============
+let cachedEntries: RegistryEntry[] | null = null;
+let cachedLoading = true;
+const listeners = new Set<(entries: RegistryEntry[], loading: boolean) => void>();
+const unsubs: Array<() => void> = [];
+let refCount = 0;
 
-  useEffect(() => {
-    const unsubs: Array<() => void> = [];
-    let loaded = 0;
-    SECTIONS.forEach((s) => {
-      const u = onSnapshot(
-        collection(db, s.collection),
-        (snap) => {
-          const arr = snap.docs.map((d) => ({ __id: d.id, ...(d.data() as any) }));
-          setBySection((prev) => ({ ...prev, [s.id]: arr }));
-          loaded++;
-          if (loaded >= SECTIONS.length) setLoading(false);
-        },
-        (e) => { console.warn('registry sub error', s.id, e); loaded++; if (loaded >= SECTIONS.length) setLoading(false); }
-      );
-      unsubs.push(u);
-    });
-    return () => unsubs.forEach((u) => u());
-  }, []);
+function ensureSubscribed() {
+  if (refCount++ > 0) return;
+  let loaded = 0;
+  SECTIONS.forEach((s) => {
+    const u = onSnapshot(
+      collection(db, s.collection),
+      (snap) => {
+        const arr = snap.docs.map((d) => ({ __id: d.id, ...(d.data() as any) }));
+        sectionDocs.set(s.id, arr);
+        loaded++;
+        if (loaded >= SECTIONS.length) { cachedLoading = false; }
+        rebuild();
+      },
+      (e) => { console.warn('registry sub error', s.id, e); loaded++; if (loaded >= SECTIONS.length) { cachedLoading = false; rebuild(); } }
+    );
+    unsubs.push(u);
+  });
+}
 
-  const entries = useMemo<RegistryEntry[]>(() => {
-    const out: RegistryEntry[] = [];
-    SECTIONS.forEach((s) => {
-      (bySection[s.id] || []).forEach((d: any) => {
-        s.extract(d).forEach((e) => {
-          if (!e.name && !e.nationalId) return;
-          out.push({
-            sectionId: s.id,
-            sectionLabel: s.label,
-            collection: s.collection,
-            docId: d.__id,
-            name: e.name,
-            nationalId: e.nationalId,
-            phone: e.phone || '',
-            subKey: e.subKey,
-            raw: d,
-          });
+function releaseSubscription() {
+  if (--refCount > 0) return;
+  unsubs.forEach((u) => u());
+  unsubs.length = 0;
+  cachedEntries = null;
+  cachedLoading = true;
+  sectionDocs.clear();
+}
+
+const sectionDocs = new Map<string, any[]>();
+
+function rebuild() {
+  const bySection: Record<string, any[]> = {};
+  sectionDocs.forEach((v, k) => { bySection[k] = v; });
+  const out: RegistryEntry[] = [];
+  SECTIONS.forEach((s) => {
+    (bySection[s.id] || []).forEach((d: any) => {
+      s.extract(d).forEach((e) => {
+        if (!e.name && !e.nationalId) return;
+        out.push({
+          sectionId: s.id,
+          sectionLabel: s.label,
+          collection: s.collection,
+          docId: d.__id,
+          name: e.name,
+          nationalId: e.nationalId,
+          phone: e.phone || '',
+          subKey: e.subKey,
+          raw: d,
         });
       });
     });
-    return out;
-  }, [bySection]);
+  });
+  cachedEntries = out;
+  listeners.forEach((l) => l(out, cachedLoading));
+}
 
-  // groups: key -> entries (only groups with >1)
+// subscribe to the shared registry; recomputes only when entries array identity changes
+export function useRegistryEntries(): { entries: RegistryEntry[]; loading: boolean } {
+  const [state, setState] = useState<{ entries: RegistryEntry[]; loading: boolean }>(() => ({
+    entries: cachedEntries || [], loading: cachedLoading,
+  }));
+  useEffect(() => {
+    ensureSubscribed();
+    const listener = (entries: RegistryEntry[], loading: boolean) => setState({ entries, loading });
+    listeners.add(listener);
+    if (cachedEntries) setState({ entries: cachedEntries, loading: cachedLoading });
+    return () => { listeners.delete(listener); releaseSubscription(); };
+  }, []);
+  return state;
+}
+
+// Legacy hook kept for DuplicatesScreen — now shares the singleton subscription
+export function useDuplicateRegistry() {
+  const { entries, loading } = useRegistryEntries();
+
+  const bySection = useMemo(() => {
+    const m: Record<string, any[]> = {};
+    entries.forEach((e) => {
+      if (!m[e.sectionId]) m[e.sectionId] = [];
+      if (!m[e.sectionId].some((d: any) => d.__id === e.docId)) m[e.sectionId].push(e.raw);
+    });
+    return m;
+  }, [entries]);
+
   const duplicateGroups = useMemo(() => {
     const byNid = new Map<string, RegistryEntry[]>();
     const byName = new Map<string, RegistryEntry[]>();
@@ -148,7 +204,6 @@ export function useDuplicateRegistry() {
     byNid.forEach((arr, key) => { if (arr.length > 1) groups.push({ type: 'nid', key, entries: arr }); });
     byName.forEach((arr, key) => {
       if (arr.length > 1) {
-        // skip if already in nid group with same set
         const sameNid = arr.every((e) => e.nationalId && arr[0].nationalId && normalizeNid(e.nationalId) === normalizeNid(arr[0].nationalId));
         if (!sameNid) groups.push({ type: 'name', key, entries: arr });
       }
@@ -156,7 +211,6 @@ export function useDuplicateRegistry() {
     return groups;
   }, [entries]);
 
-  // lookup helper for "where else does this person exist"
   const lookup = (name: string, nationalId: string, excludeDocId?: string): RegistryEntry[] => {
     const nid = normalizeNid(nationalId);
     const nm = normalizeName(name);
@@ -171,55 +225,37 @@ export function useDuplicateRegistry() {
   return { entries, duplicateGroups, lookup, loading, bySection };
 }
 
-// move a case (entry.raw) into another section; copies common fields, deletes source if move=true
-export async function transferEntry(
-  entry: RegistryEntry,
-  targetSectionId: string,
-  mode: 'copy' | 'move'
-): Promise<void> {
-  const target = SECTIONS.find((s) => s.id === targetSectionId);
-  if (!target) throw new Error('قسم غير معروف');
+export const normalizeNameForMatch = normalizeName;
+export const normalizeNidForMatch = normalizeNid;
 
-  const base: any = {
-    createdAt: serverTimestamp(),
-    transferredFrom: entry.sectionId,
-    transferredAt: new Date().toISOString(),
+// ============ Person lookup helpers for fast data entry ============
+
+export interface PersonFields {
+  name: string;
+  nationalId: string;
+  phone: string;
+  address: string;
+  village: string;
+  entry: RegistryEntry;
+}
+
+export function personFieldsFromEntry(e: RegistryEntry): PersonFields {
+  const raw = e.raw || {};
+  return {
+    name: e.name || raw.name || raw.brideName || raw.guardianName || '',
+    nationalId: e.nationalId || raw.nationalId || raw.brideNationalId || raw.guardianId || '',
+    phone: e.phone || raw.phone || raw.guardianPhone || raw.bridePhone || '',
+    address: raw.address || '',
+    village: raw.village || '',
+    entry: e,
   };
+}
 
-  // map fields per target schema
-  if (target.id === 'marriage') {
-    base.brideName = entry.name;
-    base.brideNationalId = entry.nationalId;
-    base.bridePhone = entry.phone;
-  } else if (target.id === 'orphans') {
-    base.guardianName = entry.name;
-    base.guardianId = entry.nationalId;
-    base.guardianPhone = entry.phone;
-    base.orphans = [];
-  } else if (target.id === 'payroll') {
-    // append to a new list
-    base.title = `كشف منقول من ${entry.sectionLabel}`;
-    base.date = new Date().toISOString().slice(0, 10);
-    base.items = [{
-      id: Math.random().toString(36).slice(2, 10),
-      name: entry.name,
-      nationalId: entry.nationalId,
-      phone: entry.phone,
-      maritalStatus: '',
-      amount: 0,
-    }];
-  } else {
-    base.name = entry.name;
-    base.nationalId = entry.nationalId;
-    base.phone = entry.phone;
-    base.status = 'pending';
+// merge person fields into a form object, only filling fields that are still empty
+export function mergePersonFields<T extends Record<string, any>>(form: T, f: Partial<PersonFields>): T {
+  const out: any = { ...form };
+  for (const k of ['name', 'phone', 'village', 'address'] as const) {
+    if (f[k] && !out[k]) out[k] = f[k];
   }
-
-  await addDoc(collection(db, target.collection), base);
-  if (mode === 'move') {
-    // only delete if source entry IS a top-level doc (not a sub-item like payroll item or orphan child)
-    if (!entry.subKey || entry.subKey === 'guardian') {
-      await deleteDoc(doc(db, entry.collection, entry.docId));
-    }
-  }
+  return out;
 }
