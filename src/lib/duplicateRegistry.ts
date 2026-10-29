@@ -254,7 +254,7 @@ export function personFieldsFromEntry(e: RegistryEntry): PersonFields {
 // merge person fields into a form object, only filling fields that are still empty
 export function mergePersonFields<T extends Record<string, any>>(form: T, f: Partial<PersonFields>): T {
   const out: any = { ...form };
-  for (const k of ['name', 'phone', 'village', 'address'] as const) {
+  for (const k of ['name', 'phone', 'village', 'address', 'nationalId'] as const) {
     if (f[k] && !out[k]) out[k] = f[k];
   }
   return out;

@@ -66,3 +66,44 @@ export function DupStrip({ matches, onPick }: { matches: RegistryEntry[]; onPick
 export function hasDup(matches: RegistryEntry[]) {
   return matches.length > 0;
 }
+
+const cn = (...cls: any[]) => cls.filter(Boolean).join(' ');
+
+// Standalone smart input: renders the input plus the duplicate/autofill strip.
+// Used where screens keep their own label structure.
+export function SmartInput({
+  value,
+  onChange,
+  matchBy,
+  excludeDocId,
+  onPick,
+  className,
+  required,
+  maxLength,
+  type = 'text',
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  matchBy: 'nid' | 'name';
+  excludeDocId?: string;
+  onPick?: (f: PersonFields) => void;
+  className?: string;
+  required?: boolean;
+  maxLength?: number;
+  type?: string;
+}) {
+  const matches = useFieldMatches(matchBy, value, excludeDocId);
+  return (
+    <div className="w-full">
+      <input
+        type={type}
+        required={required}
+        maxLength={maxLength}
+        className={cn(className, matches.length > 0 && 'border-amber-400! bg-amber-50!')}
+        value={value ?? ''}
+        onChange={(e) => onChange(e.target.value)}
+      />
+      <DupStrip matches={matches} onPick={onPick} />
+    </div>
+  );
+}
