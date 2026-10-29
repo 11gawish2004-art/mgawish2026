@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { db, auth, handleFirestoreError, OperationType } from './lib/firebase';
+import { installEnterNavigation } from './lib/enterNav';
 import { onAuthStateChanged, signOut, type User as FirebaseUser, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { collection, onSnapshot, query, orderBy, limit, addDoc, serverTimestamp, doc } from 'firebase/firestore';
 import CasesScreen from './components/CasesScreen';
@@ -338,6 +339,11 @@ export default function App() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isSiteLocked, setIsSiteLocked] = useState(false);
   const [lockSchedule, setLockSchedule] = useState<{ start: string; end: string } | null>(null);
+
+  useEffect(() => {
+    // Fast data entry: Enter moves to the next field inside any form
+    return installEnterNavigation();
+  }, []);
 
   useEffect(() => {
     // Site Locking Logic
