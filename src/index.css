@@ -66,6 +66,43 @@
   --color-blue-950: #172554;
 }
 
+
+/* ===== Global data-entry field polish ===== */
+input, select, textarea {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  font-variant-numeric: tabular-nums;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+}
+/* Softer placeholder text */
+input::placeholder, textarea::placeholder {
+  color: #a8a29e;
+  font-weight: 600;
+}
+/* Autofill (yellow flash) fix with emerald tint */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #ecfdf5 inset;
+  -webkit-text-fill-color: #022c22;
+  transition: background-color 9999s ease-out;
+}
+/* Hide number spinners for cleaner input */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+/* Numeric fields read slightly larger */
+input[type="tel"], input[type="number"] {
+  letter-spacing: 0.03em;
+}
+
 @layer utilities {
   .custom-scrollbar::-webkit-scrollbar {
     width: 8px;

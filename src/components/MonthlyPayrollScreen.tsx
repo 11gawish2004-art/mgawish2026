@@ -7,6 +7,7 @@ import { collection, onSnapshot, addDoc, query, orderBy, serverTimestamp, delete
 import * as XLSX from 'xlsx';
 import Logo from './Logo';
 import ConfirmModal from './ConfirmModal';
+import { SmartInput } from './SmartFields';
 
 interface PayrollItem {
   id: string;
@@ -368,7 +369,7 @@ export default function MonthlyPayrollScreen() {
               <tr key={it.id} className="border-t border-emerald-50 hover:bg-emerald-50/30">
                 <td className="p-2 text-center font-black tabular-nums" style={it.color ? { background: it.color, color: '#111' } : { color: '#047857' }}>{i + 1}</td>
                 <td className="p-1"><input value={it.name} onChange={(e) => updItem(it.id, { name: e.target.value })} className="w-full px-2 py-2 rounded-lg border border-transparent focus:border-emerald-200 outline-none" /></td>
-                <td className="p-1"><input value={it.nationalId} onChange={(e) => updItem(it.id, { nationalId: e.target.value })} className="w-full px-2 py-2 rounded-lg border border-transparent focus:border-emerald-200 outline-none tabular-nums" /></td>
+                <td className="p-1"><SmartInput matchBy="nid" value={it.nationalId} onChange={(v) => updItem(it.id, { nationalId: v })} className="w-full px-2 py-2 rounded-lg border border-transparent focus:border-emerald-200 outline-none tabular-nums" excludeDocId={activeId} onPick={(f) => updItem(it.id, { name: it.name || f.name, phone: it.phone || f.phone })} /></td>
                 <td className="p-1"><input value={it.phone} onChange={(e) => updItem(it.id, { phone: e.target.value })} className="w-full px-2 py-2 rounded-lg border border-transparent focus:border-emerald-200 outline-none tabular-nums" /></td>
                 <td className="p-1">
                   <input list="marital-opts" value={it.maritalStatus} onChange={(e) => updItem(it.id, { maritalStatus: e.target.value })} className="w-full px-2 py-2 rounded-lg border border-transparent focus:border-emerald-200 outline-none" />

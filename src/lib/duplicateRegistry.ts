@@ -254,8 +254,61 @@ export function personFieldsFromEntry(e: RegistryEntry): PersonFields {
 // merge person fields into a form object, only filling fields that are still empty
 export function mergePersonFields<T extends Record<string, any>>(form: T, f: Partial<PersonFields>): T {
   const out: any = { ...form };
-  for (const k of ['name', 'phone', 'village', 'address'] as const) {
+  for (const k of ['name', 'phone', 'village', 'address', 'nationalId'] as const) {
     if (f[k] && !out[k]) out[k] = f[k];
   }
   return out;
+}
+
+// move a case (entry.raw) into another section; copies common fields, deletes source if move=true
+export async function transferEntry(
+  entry: RegistryEntry,
+  targetSectionId: string,
+  mode: 'copy' | 'move'
+): Promise<void> {
+  const target = SECTIONS.find((s) => s.id === targetSectionId);
+  if (!target) throw new Error('قسم غير معروف');
+
+  const base: any = {
+    createdAt: serverTimestamp(),
+    transferredFrom: entry.sectionId,
+    transferredAt: new Date().toISOString(),
+  };
+
+  // map fields per target schema
+  if (target.id === 'marriage') {
+    base.brideName = entry.name;
+    base.brideNationalId = entry.nationalId;
+    base.bridePhone = entry.phone;
+  } else if (target.id === 'orphans') {
+    base.guardianName = entry.name;
+    base.guardianId = entry.nationalId;
+    base.guardianPhone = entry.phone;
+    base.orphans = [];
+  } else if (target.id === 'payroll') {
+    // append to a new list
+    base.title = `كشف منقول من ${entry.sectionLabel}`;
+    base.date = new Date().toISOString().slice(0, 10);
+    base.items = [{
+      id: Math.random().toString(36).slice(2, 10),
+      name: entry.name,
+      nationalId: entry.nationalId,
+      phone: entry.phone,
+      maritalStatus: '',
+      amount: 0,
+    }];
+  } else {
+    base.name = entry.name;
+    base.nationalId = entry.nationalId;
+    base.phone = entry.phone;
+    base.status = 'pending';
+  }
+
+  await addDoc(collection(db, target.collection), base);
+  if (mode === 'move') {
+    // only delete if source entry IS a top-level doc (not a sub-item like payroll item or orphan child)
+    if (!entry.subKey || entry.subKey === 'guardian') {
+      await deleteDoc(doc(db, entry.collection, entry.docId));
+    }
+  }
 }

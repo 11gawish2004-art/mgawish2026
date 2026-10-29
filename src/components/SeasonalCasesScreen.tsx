@@ -10,6 +10,7 @@ import { FileText } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import ConfirmModal from './ConfirmModal';
 import { useRef } from 'react';
+import { SmartInput, mergePersonFields } from './SmartFields';
 import { uploadToGoogleDrive } from '../lib/driveUpload';
 import FileUploadSlot, { FileAttachment } from './FileUploadSlot';
 
@@ -546,20 +547,26 @@ export default function SeasonalCasesScreen() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                    <div className="space-y-1">
                       <label className="text-xs font-black text-stone-500 pr-2">اسم المستفيد</label>
-                      <input 
-                        required type="text"
+                      <SmartInput
+                        matchBy="name"
+                        required
                         className="w-full bg-stone-50 border border-stone-100 p-4 rounded-2xl outline-none focus:border-amber-500 font-bold text-right"
                         value={formData.name}
-                        onChange={(e) => setFormData({...formData, name: e.target.value})}
+                        onChange={(v) => setFormData({...formData, name: v})}
+                        excludeDocId={editingItem?.id}
+                        onPick={(f) => setFormData((prev: any) => mergePersonFields(prev, f))}
                       />
                    </div>
                    <div className="space-y-1">
                       <label className="text-xs font-black text-stone-500 pr-2">الرقم القومي</label>
-                      <input 
-                        required type="text" maxLength={14}
+                      <SmartInput
+                        matchBy="nid"
+                        required maxLength={14}
                         className="w-full bg-stone-50 border border-stone-100 p-4 rounded-2xl outline-none focus:border-amber-500 font-bold text-right"
                         value={formData.nationalId}
-                        onChange={(e) => setFormData({...formData, nationalId: e.target.value})}
+                        onChange={(v) => setFormData({...formData, nationalId: v})}
+                        excludeDocId={editingItem?.id}
+                        onPick={(f) => setFormData((prev: any) => mergePersonFields(prev, f))}
                       />
                    </div>
                    <div className="space-y-1">

@@ -10,6 +10,7 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import ConfirmModal from './ConfirmModal';
 import { uploadToGoogleDrive } from '../lib/driveUpload';
+import { SmartInput } from './SmartFields';
 import FileUploadSlot, { FileAttachment } from './FileUploadSlot';
 
 function cn(...inputs: any[]) {
@@ -1386,11 +1387,18 @@ export default function OrphansScreen() {
                     </div>
                     <div className="space-y-2 text-right">
                       <label className="text-sm font-bold text-stone-500 pr-2">الرقم القومي للمعيل</label>
-                      <input 
-                        type="text" required maxLength={14}
+                      <SmartInput
+                        matchBy="nid"
+                        required maxLength={14}
                         value={formData.guardianId}
-                        onChange={(e) => setFormData({...formData, guardianId: e.target.value})}
+                        onChange={(v) => setFormData({...formData, guardianId: v})}
                         className="w-full bg-stone-50 border-2 border-emerald-50 p-4 rounded-2xl focus:border-emerald-500 outline-none transition-all font-bold text-right"
+                        excludeDocId={editingCase?.id}
+                        onPick={(f) => setFormData((prev: any) => ({
+                          ...prev,
+                          guardianName: prev.guardianName || f.name,
+                          guardianPhone: prev.guardianPhone || f.phone,
+                        }))}
                       />
                     </div>
                   </div>
