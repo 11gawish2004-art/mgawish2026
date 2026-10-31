@@ -13,6 +13,8 @@ import MedicalModal from './MedicalModal';
 import FileUploadSlot, { FileAttachment } from './FileUploadSlot';
 import Logo from './Logo';
 
+import { useFieldMatches, DupStrip, mergePersonFields } from './SmartFields';
+
 function cn(...inputs: any[]) {
   return inputs.filter(Boolean).join(' ');
 }
@@ -1508,6 +1510,9 @@ export default function CasesScreen() {
                       placeholder="أدخل اسم الحالة" 
                       value={formData.name}
                       onChange={(val) => setFormData({...formData, name: val})}
+                      matchBy="name"
+                      excludeDocId={editingCase?.id}
+                      onPick={(f: any) => setFormData((prev: any) => mergePersonFields(prev, f))}
                     />
                     <FormField 
                       label="رقم الهوية (14 رقم)" 
@@ -1515,6 +1520,9 @@ export default function CasesScreen() {
                       placeholder="رقم القومي" 
                       value={formData.nationalId}
                       onChange={(val) => setFormData({...formData, nationalId: val})}
+                      matchBy="nid"
+                      excludeDocId={editingCase?.id}
+                      onPick={(f: any) => setFormData((prev: any) => mergePersonFields(prev, f))}
                     />
                   </div>
 
@@ -1804,6 +1812,8 @@ export default function CasesScreen() {
                       placeholder="أدخل اسم الحالة" 
                       value={formData.name}
                       onChange={(val) => setFormData({...formData, name: val})}
+                      matchBy="name"
+                      onPick={(f: any) => setFormData((prev: any) => mergePersonFields(prev, f))}
                     />
                     <FormField 
                       label="رقم الهوية (14 رقم)" 
@@ -1811,6 +1821,8 @@ export default function CasesScreen() {
                       placeholder="رقم القومي" 
                       value={formData.nationalId}
                       onChange={(val) => setFormData({...formData, nationalId: val})}
+                      matchBy="nid"
+                      onPick={(f: any) => setFormData((prev: any) => mergePersonFields(prev, f))}
                     />
                   </div>
 
@@ -2416,16 +2428,18 @@ export default function CasesScreen() {
   );
 }
 
-function FormField({ label, icon, placeholder, value, onChange, type = "text", required = false }: { 
-  label: string; icon: React.ReactNode; placeholder: string; value: string; onChange: (val: string) => void; type?: string; required?: boolean 
+function FormField({ label, icon, placeholder, value, onChange, type = "text", required = false, matchBy, excludeDocId, onPick }: { 
+  label: string; icon: React.ReactNode; placeholder: string; value: string; onChange: (val: string) => void; type?: string; required?: boolean;
+  matchBy?: 'nid' | 'name'; excludeDocId?: string; onPick?: (f: any) => void;
 }) {
+  const matches = useFieldMatches(matchBy || 'nid', matchBy ? (value || '') : '', excludeDocId);
   return (
     <div className="space-y-1">
       <label className="text-sm font-bold text-emerald-800 px-1">
         {label}
         {required && <span className="text-rose-500 mr-1 text-xs">*</span>}
       </label>
-      <div className="bg-emerald-50 p-3 rounded-xl border border-emerald-100 flex items-center gap-2 focus-within:ring-2 ring-emerald-500/20">
+      <div className={cn("bg-emerald-50 p-3 rounded-xl border flex items-center gap-2 focus-within:ring-2 ring-emerald-500/20", matches.length > 0 && "border-amber-400 bg-amber-50")}>
         {icon}
         <input 
           type={type}
@@ -2436,6 +2450,7 @@ function FormField({ label, icon, placeholder, value, onChange, type = "text", r
           onChange={(e) => onChange(e.target.value)}
         />
       </div>
+      {matchBy && <DupStrip matches={matches} onPick={onPick} />}
     </div>
   );
 }
