@@ -10,6 +10,7 @@ import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import imageCompression from 'browser-image-compression';
 import ConfirmModal from './ConfirmModal';
 import MedicalModal from './MedicalModal';
+import { useFieldMatches, DupStrip } from './SmartFields';
 import * as XLSX from 'xlsx';
 import { uploadToGoogleDrive } from '../lib/driveUpload';
 import { clsx, type ClassValue } from 'clsx';
@@ -1603,7 +1604,8 @@ function MedicalRecordsList({ caseId, tab }: { caseId: string; tab: MedicalTab }
   );
 }
 
-function InputGroup({ label, icon, value, onChange, required = false }: { label: string; icon: React.ReactNode; value: string; onChange: (v: string) => void; required?: boolean }) {
+function InputGroup({ label, icon, value, onChange, required = false, matchBy, excludeDocId, onPick }: { label: string; icon: React.ReactNode; value: string; onChange: (v: string) => void; required?: boolean; matchBy?: 'nid' | 'name'; excludeDocId?: string; onPick?: (f: any) => void; }) {
+  const matches = useFieldMatches(matchBy || 'nid', matchBy ? (value || '') : '', excludeDocId);
   return (
     <div className="space-y-2">
       <label className="text-[11px] font-black text-emerald-900 uppercase tracking-wider mr-2 flex items-center gap-2">
@@ -1612,10 +1614,11 @@ function InputGroup({ label, icon, value, onChange, required = false }: { label:
       </label>
       <input 
         required={required}
-        className="w-full bg-emerald-50/50 border border-emerald-100 rounded-2xl py-4 px-6 focus:ring-4 ring-emerald-500/10 outline-none font-bold text-sm transition-all"
+        className={`w-full bg-emerald-50/50 border rounded-2xl py-4 px-6 focus:ring-4 ring-emerald-500/10 outline-none font-bold text-sm transition-all ${matches.length > 0 ? 'border-amber-400 bg-amber-50' : 'border-emerald-100'}`}
         value={value}
         onChange={e => onChange(e.target.value)}
       />
+      {matchBy && <DupStrip matches={matches} onPick={onPick} />}
     </div>
   );
 }

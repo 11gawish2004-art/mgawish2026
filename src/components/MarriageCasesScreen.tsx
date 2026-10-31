@@ -12,6 +12,8 @@ import ConfirmModal from './ConfirmModal';
 import { uploadToGoogleDrive } from '../lib/driveUpload';
 import FileUploadSlot, { FileAttachment } from './FileUploadSlot';
 
+import { useFieldMatches, DupStrip } from './SmartFields';
+
 function cn(...inputs: any[]) {
   return inputs.filter(Boolean).join(' ');
 }
@@ -1008,8 +1010,8 @@ export default function MarriageCasesScreen() {
                     {/* Section 1: Bride Info */}
                     <div className="space-y-4">
                       <h3 className="text-sm font-black text-emerald-800 border-r-4 border-emerald-500 pr-3">بيانات العروسة</h3>
-                      <FormInput label="اسم العروسة بالكامل" value={formData.brideName} onChange={val => setFormData({...formData, brideName: val})} required />
-                      <FormInput label="الرقم القومي (14 رقم)" value={formData.brideNationalId} onChange={val => setFormData({...formData, brideNationalId: val})} maxLength={14} required />
+                      <FormInput label="اسم العروسة بالكامل" value={formData.brideName} onChange={val => setFormData({...formData, brideName: val})} required matchBy="name" excludeDocId={editingCase?.id} onPick={(f: any) => setFormData((prev: any) => ({ ...prev, brideName: prev.brideName || f.name, brideNationalId: prev.brideNationalId || f.nationalId, phone1: prev.phone1 || f.phone }))} />
+                      <FormInput label="الرقم القومي (14 رقم)" value={formData.brideNationalId} onChange={val => setFormData({...formData, brideNationalId: val})} maxLength={14} required matchBy="nid" excludeDocId={editingCase?.id} onPick={(f: any) => setFormData((prev: any) => ({ ...prev, brideName: prev.brideName || f.name, brideNationalId: prev.brideNationalId || f.nationalId, phone1: prev.phone1 || f.phone }))} />
                       <div className="grid grid-cols-2 gap-4">
                         <FormInput label="تليفون 1" value={formData.phone1} onChange={val => setFormData({...formData, phone1: val})} required />
                         <FormInput label="تليفون 2" value={formData.phone2} onChange={val => setFormData({...formData, phone2: val})} />
@@ -1218,7 +1220,8 @@ function FilterBtn({ active, onClick, label }: { active: boolean; onClick: () =>
   );
 }
 
-function FormInput({ label, value, onChange, required = false, type = "text", maxLength, placeholder }: { label: string; value: string; onChange: (val: string) => void; required?: boolean; type?: string; maxLength?: number; placeholder?: string }) {
+function FormInput({ label, value, onChange, required = false, type = "text", maxLength, placeholder, matchBy, excludeDocId, onPick }: { label: string; value: string; onChange: (val: string) => void; required?: boolean; type?: string; maxLength?: number; placeholder?: string; matchBy?: 'nid' | 'name'; excludeDocId?: string; onPick?: (f: any) => void; }) {
+  const matches = useFieldMatches(matchBy || 'nid', matchBy ? (value || '') : '', excludeDocId);
   return (
     <div className="space-y-1">
       <label className="text-xs font-bold text-emerald-800 mr-1">{label} {required && <span className="text-rose-500">*</span>}</label>
@@ -1227,10 +1230,11 @@ function FormInput({ label, value, onChange, required = false, type = "text", ma
         required={required}
         maxLength={maxLength}
         placeholder={placeholder}
-        className="w-full bg-white p-4 rounded-2xl border border-emerald-100 focus:ring-2 ring-emerald-500/20 outline-none text-emerald-950 font-bold text-sm"
+        className={cn("w-full bg-white p-4 rounded-2xl border focus:ring-2 ring-emerald-500/20 outline-none text-emerald-950 font-bold text-sm", matches.length > 0 ? "border-amber-400 bg-amber-50" : "border-emerald-100")}
         value={value ?? ''}
         onChange={e => onChange(e.target.value)}
       />
+      {matchBy && <DupStrip matches={matches} onPick={onPick} />}
     </div>
   );
 }
