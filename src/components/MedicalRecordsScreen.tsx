@@ -1244,6 +1244,9 @@ export default function MedicalRecordsScreen() {
                       value={formData.name} 
                       onChange={v => setFormData({...formData, name: v})} 
                       required 
+                      matchBy="name"
+                      excludeDocId={editingId || undefined}
+                      onPick={(f: any) => setFormData(p => ({ ...p, name: p.name || f.name, phone: p.phone || f.phone, address: p.address || f.address }))}
                     />
                     <InputGroup 
                       label={formData.isUnderAge ? "الرقم القومي للطفل/ة" : "الرقم القومي للمريض"} 
@@ -1251,6 +1254,9 @@ export default function MedicalRecordsScreen() {
                       value={formData.nationalId} 
                       onChange={v => setFormData({...formData, nationalId: v})} 
                       required 
+                      matchBy="nid"
+                      excludeDocId={editingId || undefined}
+                      onPick={(f: any) => setFormData(p => ({ ...p, name: p.name || f.name, phone: p.phone || f.phone, address: p.address || f.address }))}
                     />
 
                     {formData.isUnderAge && (
@@ -1261,6 +1267,9 @@ export default function MedicalRecordsScreen() {
                           value={formData.guardianName || ''} 
                           onChange={v => setFormData({...formData, guardianName: v})} 
                           required 
+                          matchBy="name"
+                          excludeDocId={editingId || undefined}
+                          onPick={(f: any) => setFormData(p => ({ ...p, guardianName: p.guardianName || f.name, guardianNationalId: p.guardianNationalId || f.nationalId, phone: p.phone || f.phone, address: p.address || f.address }))}
                         />
                         <InputGroup 
                           label="الرقم القومي لولي الامر" 
@@ -1268,6 +1277,9 @@ export default function MedicalRecordsScreen() {
                           value={formData.guardianNationalId || ''} 
                           onChange={v => setFormData({...formData, guardianNationalId: v})} 
                           required 
+                          matchBy="nid"
+                          excludeDocId={editingId || undefined}
+                          onPick={(f: any) => setFormData(p => ({ ...p, guardianName: p.guardianName || f.name, guardianNationalId: p.guardianNationalId || f.nationalId, phone: p.phone || f.phone, address: p.address || f.address }))}
                         />
                       </>
                     )}
