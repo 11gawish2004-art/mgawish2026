@@ -68,7 +68,7 @@ export const SECTIONS: SectionDef[] = [
     id: 'medical',
     label: 'الحالات المرضية',
     collection: 'medicalCases',
-    route: '/medical-records',
+    route: '/medical',
     extract: (d) => {
       const out: any[] = [];
       if (d.name) out.push({ name: d.name, nationalId: d.nationalId || '', phone: d.phone || '' });
